@@ -1,0 +1,104 @@
+@import '../Likizo/LikizoPage.css';
+
+/* ── File Upload ── */
+.file-upload-area {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fafbfc;
+  min-height: 122px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-upload-area:hover {
+  border-color: var(--color-primary);
+  background: #f0f4ff;
+}
+
+.file-upload-area.drag-over {
+  border-color: var(--color-primary);
+  background: #e0ebff;
+}
+
+.file-upload-input {
+  display: none;
+}
+
+.file-upload-content svg {
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+}
+
+.file-upload-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-1);
+}
+
+.file-upload-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.file-upload-list {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.file-upload-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
+}
+
+.file-upload-item svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.file-upload-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+}
+
+.file-upload-size {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.file-upload-remove {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+
+.file-upload-remove:hover {
+  color: #dc2626;
+  background: #fee2e2;
+}

@@ -1,0 +1,370 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ── Notification Accordion Cards ── */
+.notif-accordion-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.notif-accordion-card {
+  position: relative;
+}
+
+.notif-accordion-card.open {
+  z-index: 20;
+}
+
+.notif-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-5) var(--space-5);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, box-shadow 0.2s, border-color 0.2s, border-radius 0.2s;
+}
+
+.notif-accordion-header:hover {
+  background: var(--color-bg);
+}
+
+.notif-accordion-card.open .notif-accordion-header {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.notif-accordion-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-accordion-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 0;
+}
+
+.notif-accordion-count {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-sky-blue);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.notif-accordion-chevron {
+  color: var(--color-text-muted);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.notif-accordion-card.open .notif-accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.notif-accordion-body {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--color-white);
+  border: 1px solid var(--color-primary-light);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: notifFadeIn 0.2s ease;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+@keyframes notifFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.notif-accordion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-3) var(--space-2);
+  border: none;
+  border-bottom: 1px solid var(--color-border-light);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s;
+}
+
+.notif-accordion-item:hover {
+  background: var(--color-bg);
+}
+
+.notif-accordion-item:last-child {
+  border-bottom: none;
+}
+
+.notif-accordion-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.notif-accordion-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ── Section Separator ── */
+.dashboard-separator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-2) 0;
+}
+
+.dashboard-separator::before,
+.dashboard-separator::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d4a017, transparent);
+}
+
+/* ── Notification Detail Modal ── */
+.notif-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.notif-modal-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.notif-modal-time {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.notif-modal-heading {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.notif-modal-body {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.notif-modal-type {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.notif-modal-type-instruction { color: #065f46; background: #d1fae5; }
+.notif-modal-type-letter      { color: #92400e; background: #fef3c7; }
+.notif-modal-type-form        { color: #1e40af; background: #dbeafe; }
+.notif-modal-type-memo        { color: #9f1239; background: #fce7f3; }
+.notif-modal-type-circular    { color: #701a75; background: #fae8ff; }
+
+.notif-modal-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.notif-modal-attachments-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.notif-modal-attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.notif-modal-attachment {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.notif-modal-attachment:hover {
+  background: var(--color-white);
+  border-color: var(--color-primary-light);
+}
+
+.notif-modal-attachment-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+}
+
+.notif-modal-attachment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-modal-attachment-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-modal-attachment-size {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.notif-modal-attachment-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary);
+  background: var(--color-white);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.notif-modal-attachment-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* ── Service Cards ── */
+.service-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-5);
+  background: var(--color-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-align: center;
+}
+
+.service-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-primary-light);
+}
+
+.service-card-icon {
+  width: 64px; height: 64px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.service-card-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.service-card-label {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.service-card-desc {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .notif-accordion-grid { grid-template-columns: repeat(2, 1fr); }
+  .service-cards-grid   { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .notif-accordion-grid { grid-template-columns: 1fr; }
+  .service-cards-grid   { grid-template-columns: repeat(2, 1fr); }
+}
