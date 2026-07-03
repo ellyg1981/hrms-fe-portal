@@ -2,7 +2,6 @@
   display: flex;
   align-items: flex-end;
   gap: var(--space-4);
-  margin-bottom: var(--space-6);
   flex-wrap: wrap;
 }
 
@@ -111,12 +110,12 @@
 }
 
 .sal-table-head.earn   { background: var(--color-primary); }
-.sal-table-head.deduct { background: var(--color-danger); }
+.sal-table-head.deduct { background: var(--color-gold); }
 
 .sal-table { font-size: 13px; }
 
 .sal-amount      { text-align: right; font-weight: 600; color: var(--color-primary); }
-.sal-amount.red  { color: var(--color-danger); }
+.sal-amount.gold { color: var(--color-gold); }
 
 .sal-total-row td {
   font-weight: 800;
@@ -132,7 +131,7 @@
   background: var(--color-primary);
   color: var(--color-white);
   border-radius: var(--radius-lg);
-  padding: 16px 24px;
+  padding: 10px 24px;
   font-size: 15px;
   font-weight: 700;
   margin-top: 4px;

@@ -55,23 +55,23 @@ function SalaryPage() {
   return (
     <div className="module-content">
       <main className="module-main">
-        <ModuleTitleBar title="Salary Slip" subtitle="View and download your monthly payslip" color="#0B2E59" />
-
-        <div className="sal-controls">
-          <div className="sal-select-group">
-            <label className="form-label">Month</label>
-            <select className="form-input form-select" value={selMonth} onChange={e => setSelMonth(e.target.value)}>
-              {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
+        <ModuleTitleBar title="Salary Slip" subtitle="View and download your monthly payslip" color="#0B2E59">
+          <div className="sal-controls">
+            <div className="sal-select-group">
+              <label className="form-label">Month</label>
+              <select className="form-input form-select" value={selMonth} onChange={e => setSelMonth(e.target.value)}>
+                {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div className="sal-select-group">
+              <label className="form-label">Year</label>
+              <select className="form-input form-select" value={selYear} onChange={e => setSelYear(e.target.value)}>
+                {['2024','2025','2026'].map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <button className="btn btn-primary sal-view-btn" onClick={() => setShowSlip(true)}>View Payslip</button>
           </div>
-          <div className="sal-select-group">
-            <label className="form-label">Year</label>
-            <select className="form-input form-select" value={selYear} onChange={e => setSelYear(e.target.value)}>
-              {['2024','2025','2026'].map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </div>
-          <button className="btn btn-primary sal-view-btn" onClick={() => setShowSlip(true)}>View Payslip</button>
-        </div>
+        </ModuleTitleBar>
 
         {showSlip && (
           <div className="sal-slip-card">
@@ -101,11 +101,11 @@ function SalaryPage() {
                 <div className="sal-table-wrap">
                   <div className="sal-table-head deduct">DEDUCTIONS</div>
                   <table className="modern-table sal-table"><tbody>
-                    <tr><td>PAYE</td><td className="sal-amount red">TZS {fmt(d.deductions.paye)}</td></tr>
-                    <tr><td>PSPF (6.5%)</td><td className="sal-amount red">TZS {fmt(d.deductions.pspf)}</td></tr>
-                    <tr><td>NHIF</td><td className="sal-amount red">TZS {fmt(d.deductions.nhif)}</td></tr>
-                    <tr><td>Loan Repayment</td><td className="sal-amount red">TZS {fmt(d.deductions.loan)}</td></tr>
-                    <tr className="sal-total-row"><td>TOTAL DEDUCTIONS</td><td className="sal-amount red">TZS {fmt(totalDeduct)}</td></tr>
+                    <tr><td>PAYE</td><td className="sal-amount gold">TZS {fmt(d.deductions.paye)}</td></tr>
+                    <tr><td>PSPF (6.5%)</td><td className="sal-amount gold">TZS {fmt(d.deductions.pspf)}</td></tr>
+                    <tr><td>NHIF</td><td className="sal-amount gold">TZS {fmt(d.deductions.nhif)}</td></tr>
+                    <tr><td>Loan Repayment</td><td className="sal-amount gold">TZS {fmt(d.deductions.loan)}</td></tr>
+                    <tr className="sal-total-row"><td>TOTAL DEDUCTIONS</td><td className="sal-amount gold">TZS {fmt(totalDeduct)}</td></tr>
                   </tbody></table>
                 </div>
               </div>

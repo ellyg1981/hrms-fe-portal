@@ -1,7 +1,7 @@
 import React from 'react';
 import './ModuleTitleBar.css';
 
-function ModuleTitleBar({ title, subtitle, color = '#0B2E59', ctaLabel, onCta, avatar }) {
+function ModuleTitleBar({ title, subtitle, color = '#0B2E59', ctaLabel, onCta, avatar, children }) {
   return (
     <div className="mtb-wrap" style={{ borderLeftColor: color }}>
       <div className="mtb-left">
@@ -11,6 +11,8 @@ function ModuleTitleBar({ title, subtitle, color = '#0B2E59', ctaLabel, onCta, a
           {subtitle && <p className="mtb-sub">{subtitle}</p>}
         </div>
       </div>
+
+      {children && <div className="mtb-right">{children}</div>}
 
       {ctaLabel && (
         <button className="mtb-cta" onClick={onCta}>

@@ -93,7 +93,6 @@ function AppLayout({ children, title, subtitle }) {
       '/modules/training': 'Training',
       '/modules/announcements': 'Announcements',
       '/modules/documents': 'Documents',
-      '/modules/requests': 'Requests',
       '/modules/performance': 'Performance',
       '/modules/salary': 'Salary',
       '/modules/staff-id': 'Staff ID',

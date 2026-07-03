@@ -203,6 +203,14 @@
   color: #fca5a5;
 }
 
+.sidebar-signout.sidebar-signout--icon {
+  justify-content: center;
+  padding: 10px 0;
+  width: 40px;
+  margin: 0 auto;
+  border-radius: var(--radius-md);
+}
+
 /* Mobile */
 @media (max-width: 1024px) {
   .sidebar {
