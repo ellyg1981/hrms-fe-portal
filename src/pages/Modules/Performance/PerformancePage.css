@@ -1,3 +1,5 @@
+@import '../Likizo/LikizoPage.css';
+
 /* Performance Overview */
 .perf-overview {
   display: grid;
@@ -12,7 +14,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: var(--space-8);
+  padding: var(--space-4);
 }
 
 .perf-overall-header {
@@ -268,7 +270,7 @@
 /* Responsive */
 @media (max-width: 1024px) {
   .perf-overview { grid-template-columns: 1fr; }
-  .perf-overall-card { padding: var(--space-6); }
+  .perf-overall-card { padding: var(--space-4); }
   .perf-score-grid { grid-template-columns: repeat(2, 1fr); }
 }
 

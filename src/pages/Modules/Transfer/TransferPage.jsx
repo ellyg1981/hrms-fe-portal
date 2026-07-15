@@ -3,19 +3,21 @@ import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitl
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
+import LocationGroup from '../../../components/common/location/LocationGroup';
+import html2pdf from 'html2pdf.js';
 import './TransferPage.css';
 
 const TRANSFER_HISTORY = [
-  { id: 'TR-2026-001', type: 'Regional Transfer', fromStation: 'Dar es Salaam HQ', toStation: 'Dodoma Regional Office', effectiveDate: '2026-08-01', status: 'Approved', appliedOn: '2026-05-15', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2026-06-10', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Reassignment to new regional headquarters', contactAddress: 'Plot 42, Nyerere Road, Dodoma', contactPhone: '+255 765 432 101' },
-  { id: 'TR-2026-002', type: 'Departmental Transfer', fromStation: 'HR Division', toStation: 'Finance Division', effectiveDate: '2026-07-01', status: 'Approved', appliedOn: '2026-04-20', approvedBy: 'Mr. Joseph Mwangi', approverRole: 'Director General', decisionDate: '2026-05-15', region: 'Dar es Salaam', district: 'Ilala', reason: 'Skill utilization in financial operations', contactAddress: 'House 12, Upanga, Dar es Salaam', contactPhone: '+255 789 123 456' },
-  { id: 'TR-2026-003', type: 'Regional Transfer', fromStation: 'Arusha Regional Office', toStation: 'Mwanza Regional Office', effectiveDate: '2026-09-01', status: 'Pending', appliedOn: '2026-06-01', approvedBy: null, approverRole: null, decisionDate: null, region: 'Mwanza', district: 'Ilemela', reason: 'Family relocation request', contactAddress: 'P.O. Box 450, Arusha', contactPhone: '+255 754 321 987' },
-  { id: 'TR-2026-004', type: 'Promotion Transfer', fromStation: 'Mbeya District Office', toStation: 'Head Office - Dodoma', effectiveDate: '2026-10-01', status: 'Approved', appliedOn: '2026-05-01', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2026-06-20', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Promotion to Senior Officer grade', contactAddress: 'Plot 8, Sokoine Road, Mbeya', contactPhone: '+255 767 890 234' },
+  { id: 'TR-2026-001', type: 'Professional / career reasons', fromStation: 'Dar es Salaam HQ', toStation: 'Dodoma Regional Office', effectiveDate: '2026-08-01', status: 'Approved', appliedOn: '2026-05-15', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2026-06-10', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Reassignment to new regional headquarters', contactAddress: 'Plot 42, Nyerere Road, Dodoma', contactPhone: '+255 765 432 101' },
+  { id: 'TR-2026-002', type: 'Professional / career reasons', fromStation: 'HR Division', toStation: 'Finance Division', effectiveDate: '2026-07-01', status: 'Approved', appliedOn: '2026-04-20', approvedBy: 'Mr. Joseph Mwangi', approverRole: 'Director General', decisionDate: '2026-05-15', region: 'Dar es Salaam', district: 'Ilala', reason: 'Skill utilization in financial operations', contactAddress: 'House 12, Upanga, Dar es Salaam', contactPhone: '+255 789 123 456' },
+  { id: 'TR-2026-003', type: 'Family reasons (spouse, mother, or father)', fromStation: 'Arusha Regional Office', toStation: 'Mwanza Regional Office', effectiveDate: '2026-09-01', status: 'Pending', appliedOn: '2026-06-01', approvedBy: null, approverRole: null, decisionDate: null, region: 'Mwanza', district: 'Ilemela', reason: 'Family relocation request', contactAddress: 'P.O. Box 450, Arusha', contactPhone: '+255 754 321 987' },
+  { id: 'TR-2026-004', type: 'Professional / career reasons', fromStation: 'Mbeya District Office', toStation: 'Head Office - Dodoma', effectiveDate: '2026-10-01', status: 'Approved', appliedOn: '2026-05-01', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2026-06-20', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Promotion to Senior Officer grade', contactAddress: 'Plot 8, Sokoine Road, Mbeya', contactPhone: '+255 767 890 234' },
 ];
 
 const CONFIRMATION_LETTERS = [
-  { id: 'TC-2026-001', type: 'Regional Transfer', period: 'Dar es Salaam HQ to Dodoma Regional Office', effectiveDate: '01 Aug 2026', status: 'Issued' },
-  { id: 'TC-2026-002', type: 'Departmental Transfer', period: 'HR Division to Finance Division', effectiveDate: '01 Jul 2026', status: 'Issued' },
-  { id: 'TC-2026-003', type: 'Promotion Transfer', period: 'Mbeya to Head Office - Dodoma', effectiveDate: '01 Oct 2026', status: 'Issued' },
+  { id: 'TC-2026-001', type: 'Professional / career reasons', period: 'Dar es Salaam HQ to Dodoma Regional Office', effectiveDate: '01 Aug 2026', status: 'Issued' },
+  { id: 'TC-2026-002', type: 'Professional / career reasons', period: 'HR Division to Finance Division', effectiveDate: '01 Jul 2026', status: 'Issued' },
+  { id: 'TC-2026-003', type: 'Professional / career reasons', period: 'Mbeya to Head Office - Dodoma', effectiveDate: '01 Oct 2026', status: 'Issued' },
 ];
 
 const STATUS_STYLE = {
@@ -43,9 +45,235 @@ function TransferPage() {
   const [selectedTransfer, setSelectedTransfer] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const fileInputRef = useRef(null);
+  const [replaceIndex, setReplaceIndex] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [selectedConfirmationLetter, setSelectedConfirmationLetter] = useState(null);
+  const [transferLocation, setTransferLocation] = useState({ region: '', district: '', ward: '' });
+
+  const generateConfirmationLetterHTML = (row) => {
+    return `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>${row.id}</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html { background: #fff; overflow: hidden; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; overflow: hidden; }
+  .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 15mm 18mm; background: #fff; overflow: hidden; }
+  .hdr-center { text-align: center; }
+  .hdr-center h1 { font-size: 12pt; font-weight: 700; margin: 0 0 2px; text-transform: uppercase; }
+  .hdr-center h2 { font-size: 11pt; font-weight: 700; margin: 0 0 2px; text-transform: uppercase; }
+  .hdr-center h3 { font-size: 10pt; font-weight: 700; margin: 0; text-transform: uppercase; }
+  .doc-title { text-align: center; font-weight: 700; font-size: 12pt; text-transform: uppercase; margin-bottom: 4px; color: #0B2E59; border-bottom: 2px solid #d4a017; padding-bottom: 8px; }
+  .doc-subtitle { text-align: center; font-weight: 600; font-size: 10pt; margin-bottom: 16px; color: #6b7280; }
+  .section-title { font-weight: 700; font-size: 10pt; margin: 14px 0 6px; text-transform: uppercase; color: #0B2E59; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+  .field-row { display: flex; align-items: baseline; margin-bottom: 8px; }
+  .field-label { flex-shrink: 0; font-weight: 500; white-space: nowrap; font-size: 10pt; color: #4b5563; }
+  .field-value { flex: 1; border-bottom: 1px dotted #000; padding-left: 6px; min-height: 1em; font-weight: 600; font-size: 10pt; }
+  .field-row.two-col { display: flex; gap: 14px; }
+  .field-group { flex: 1; display: flex; align-items: baseline; }
+  .dotted-area { min-height: 40px; border-bottom: 1px dotted #000; margin-bottom: 4px; }
+  .signature { text-align: right; font-style: italic; margin-bottom: 8px; font-size: 9pt; }
+  .footer { margin-top: 16px; font-size: 9pt; color: #555; text-align: center; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 12px; }
+  .info-item { display: flex; align-items: baseline; }
+  .info-label { font-weight: 500; color: #4b5563; font-size: 10pt; white-space: nowrap; margin-right: 6px; }
+  .info-value { font-weight: 600; font-size: 10pt; border-bottom: 1px dotted #000; flex: 1; min-height: 1em; }
+  @media print {
+    html { background: #fff; }
+    body { background: #fff; padding: 0; }
+    .page { margin: 0 auto; box-shadow: none; width: 100%; height: 297mm; padding: 15mm 18mm; overflow: hidden; }
+  }
+</style></head>
+<body>
+  <div class="page">
+    <div class="hdr-center">
+      <h1>Jamhuri ya Muungano wa Tanzania</h1>
+      <h2>Wizara ya Mambo ya Ndani ya Nchi</h2>
+      <h3>Idara ya Uhamiaji</h3>
+    </div>
+    <div class="doc-title">Transfer Confirmation Letter</div>
+    <div class="doc-subtitle">Reference No: ${row.id} &middot; Status: ${row.status}</div>
+    <div class="section-title">Employee Information</div>
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Full Name:</span><span class="info-value">John Michael Doe</span></div>
+      <div class="info-item"><span class="info-label">Employee ID:</span><span class="info-value">EMP-2024-00542</span></div>
+      <div class="info-item"><span class="info-label">Designation:</span><span class="info-value">Senior HR Officer</span></div>
+      <div class="info-item"><span class="info-label">Department:</span><span class="info-value">Human Resources</span></div>
+    </div>
+    <div class="section-title">Transfer Details</div>
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Transfer Type:</span><span class="info-value">${row.type}</span></div>
+      <div class="info-item"><span class="info-label">Reference ID:</span><span class="info-value">${row.id}</span></div>
+      <div class="info-item"><span class="info-label">From Station:</span><span class="info-value">${row.period.split(' to ')[0]}</span></div>
+      <div class="info-item"><span class="info-label">To Station:</span><span class="info-value">${row.period.split(' to ')[1]}</span></div>
+      <div class="info-item"><span class="info-label">Effective Date:</span><span class="info-value">${row.effectiveDate}</span></div>
+      <div class="info-item"><span class="info-label">Status:</span><span class="info-value">${row.status}</span></div>
+    </div>
+    <div class="section-title">Official Approval</div>
+    <p style="font-size:10pt;margin:0 0 8px;">This is to confirm that the above-named employee has been officially approved for transfer as per the details stated. The employee is hereby directed to report to the new station on the effective date indicated.</p>
+    <div class="dotted-area"></div>
+    <div class="signature">Authorized Signature &middot; Date</div>
+    <div class="section-title">Acknowledgement</div>
+    <p style="font-size:10pt;margin:0 0 8px;">I hereby acknowledge receipt of this transfer confirmation letter and understand the terms stated herein.</p>
+    <div class="dotted-area"></div>
+    <div class="signature">Employee Signature &middot; Date</div>
+    <div class="footer">Ref: ${row.id} &middot; Transfer Confirmation Letter &middot; Generated by HRMS Staff Portal</div>
+  </div>
+</body></html>
+    `;
+  };
+
+  const downloadConfirmationLetterPDF = (row) => {
+    const html = generateConfirmationLetterHTML(row);
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.opacity = '0';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '-9999';
+    container.innerHTML = html;
+    document.body.appendChild(container);
+
+    const pageEl = container.querySelector('.page');
+    const opt = {
+      margin: 0,
+      filename: `Transfer_Confirmation_${row.id}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'avoid-all' }
+    };
+
+    return html2pdf().set(opt).from(pageEl).outputPdf('blob').then((blob) => {
+      document.body.removeChild(container);
+      return blob;
+    });
+  };
+
+  const handleDownloadConfirmation = (row) => {
+    downloadConfirmationLetterPDF(row).then((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Transfer_Confirmation_${row.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  };
+
+  const handlePreviewConfirmation = (row) => {
+    setSelectedConfirmationLetter(row);
+  };
+
+  const generateTransferRecordHTML = (row) => {
+    return `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>${row.id}</title>
+<style>
+  @page { size: A4; margin: 15mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; }
+  .page { max-width: 210mm; margin: 0 auto; padding: 10mm; }
+  .hdr-center { text-align: center; margin-bottom: 16px; }
+  .hdr-center h1 { font-size: 12pt; font-weight: 700; margin: 0 0 2px; text-transform: uppercase; }
+  .hdr-center h2 { font-size: 11pt; font-weight: 700; margin: 0 0 2px; text-transform: uppercase; }
+  .doc-title { text-align: center; font-weight: 700; font-size: 12pt; text-transform: uppercase; margin-bottom: 4px; color: #0B2E59; border-bottom: 2px solid #d4a017; padding-bottom: 8px; }
+  .doc-subtitle { text-align: center; font-weight: 600; font-size: 10pt; margin-bottom: 16px; color: #6b7280; }
+  .section-title { font-weight: 700; font-size: 10pt; margin: 14px 0 6px; text-transform: uppercase; color: #0B2E59; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 12px; }
+  .info-item { display: flex; align-items: baseline; }
+  .info-label { font-weight: 500; color: #4b5563; font-size: 10pt; white-space: nowrap; margin-right: 6px; }
+  .info-value { font-weight: 600; font-size: 10pt; border-bottom: 1px dotted #000; flex: 1; min-height: 1em; }
+  .footer { margin-top: 16px; font-size: 9pt; color: #555; text-align: center; }
+  @media print { body { padding: 0; } .page { margin: 0; max-width: 100%; } }
+</style></head>
+<body>
+  <div class="page">
+    <div class="hdr-center">
+      <h1>Jamhuri ya Muungano wa Tanzania</h1>
+      <h2>Wizara ya Mambo ya Ndani ya Nchi</h2>
+    </div>
+    <div class="doc-title">Transfer Record</div>
+    <div class="doc-subtitle">Reference No: ${row.id} &middot; Status: ${row.status}</div>
+    <div class="section-title">Transfer Information</div>
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Reference ID:</span><span class="info-value">${row.id}</span></div>
+      <div class="info-item"><span class="info-label">Transfer Type:</span><span class="info-value">${row.type}</span></div>
+      <div class="info-item"><span class="info-label">From Station:</span><span class="info-value">${row.fromStation}</span></div>
+      <div class="info-item"><span class="info-label">To Station:</span><span class="info-value">${row.toStation}</span></div>
+      <div class="info-item"><span class="info-label">Effective Date:</span><span class="info-value">${row.effectiveDate}</span></div>
+      <div class="info-item"><span class="info-label">Applied On:</span><span class="info-value">${row.appliedOn}</span></div>
+      <div class="info-item"><span class="info-label">Region:</span><span class="info-value">${row.region}</span></div>
+      <div class="info-item"><span class="info-label">District:</span><span class="info-value">${row.district}</span></div>
+    </div>
+    <div class="section-title">Location & Contact</div>
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Contact Address:</span><span class="info-value">${row.contactAddress}</span></div>
+      <div class="info-item"><span class="info-label">Contact Phone:</span><span class="info-value">${row.contactPhone}</span></div>
+    </div>
+    <div class="section-title">Reason for Transfer</div>
+    <p style="font-size:10pt;margin:0 0 12px;">${row.reason}</p>
+    ${row.status === 'Approved' && row.approvedBy ? `
+    <div class="section-title">Approval Decision</div>
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Approved By:</span><span class="info-value">${row.approvedBy}</span></div>
+      <div class="info-item"><span class="info-label">Approver Role:</span><span class="info-value">${row.approverRole}</span></div>
+      <div class="info-item"><span class="info-label">Decision Date:</span><span class="info-value">${row.decisionDate}</span></div>
+    </div>
+    ` : ''}
+    <div class="footer">Ref: ${row.id} &middot; Transfer Record &middot; Generated by HRMS Staff Portal</div>
+  </div>
+</body></html>
+    `;
+  };
+
+  const downloadTransferRecord = (row) => {
+    const html = generateTransferRecordHTML(row);
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.opacity = '0';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '-9999';
+    container.innerHTML = html;
+    document.body.appendChild(container);
+    const pageEl = container.querySelector('.page');
+    const opt = {
+      margin: 0,
+      filename: `Transfer_Record_${row.id}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'avoid-all' }
+    };
+    html2pdf().set(opt).from(pageEl).outputPdf('blob').then((blob) => {
+      document.body.removeChild(container);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Transfer_Record_${row.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  };
+
+  const printTransferRecord = (row) => {
+    const html = generateTransferRecordHTML(row);
+    const w = window.open('', '_blank', 'width=800,height=600');
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); }, 300);
+  };
 
   return (
     <div className="module-content">
@@ -134,7 +362,7 @@ function TransferPage() {
               <div className="leave-form-section">
                 <h4 className="leave-form-section-title">Transfer Details</h4>
                 <div className="leave-form-row">
-                  <div className="form-group"><label className="form-label">Transfer Type</label><select className="form-input form-select"><option>Regional Transfer</option><option>Departmental Transfer</option><option>Promotion Transfer</option><option>Temporary Transfer</option><option>Inter-Agency Transfer</option></select></div>
+                  <div className="form-group"><label className="form-label">Transfer Type</label><select className="form-input form-select"><option>Medical grounds</option><option>Family reasons (spouse, mother, or father)</option><option>Professional / career reasons</option><option>Others</option></select></div>
                   <div className="form-group"><label className="form-label">From Station / Office</label><input type="text" className="form-input" placeholder="Current station or office" /></div>
                   <div className="form-group"><label className="form-label">To Station / Office</label><input type="text" className="form-input" placeholder="Requested station or office" /></div>
                   <div className="form-group"><label className="form-label">Effective Date</label><input type="date" className="form-input" /></div>
@@ -143,17 +371,66 @@ function TransferPage() {
               <div className="leave-form-section">
                 <h4 className="leave-form-section-title">Location Information</h4>
                 <div className="leave-form-row">
-                  <div className="form-group"><label className="form-label">New Region</label><select className="form-input form-select"><option>Dar es Salaam</option><option>Dodoma</option><option>Arusha</option><option>Mwanza</option><option>Mbeya</option><option>Morogoro</option><option>Kilimanjaro</option><option>Zanzibar</option></select></div>
-                  <div className="form-group"><label className="form-label">New District</label><select className="form-input form-select"><option>Ilala</option><option>Kinondoni</option><option>Temeke</option><option>Kigamboni</option><option>Ubungo</option></select></div>
+                  <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                    <LocationGroup
+                      region={transferLocation.region}
+                      district={transferLocation.district}
+                      ward={transferLocation.ward}
+                      onChange={setTransferLocation}
+                      labels={{ region: 'New Region', district: 'New District', ward: 'Ward / Office Area' }}
+                    />
+                  </div>
                   <div className="form-group"><label className="form-label">Contact Address</label><input type="text" className="form-input" placeholder="Enter your contact address" /></div>
                   <div className="form-group"><label className="form-label">Contact Phone Number</label><input type="tel" className="form-input" placeholder="+255 7XX XXX XXX" /></div>
                 </div>
               </div>
               <div className="leave-form-section">
                 <h4 className="leave-form-section-title">Additional Information</h4>
-                <div className="leave-form-row leave-form-row--two">
+                <div className="leave-form-row leave-form-row--full">
                   <div className="form-group"><label className="form-label">Reason for Transfer</label><textarea className="form-input" rows="4" placeholder="Provide a clear reason for your transfer request..."></textarea></div>
-                  <div className="form-group"><label className="form-label">Supporting Documents</label><div className="file-upload-area" onClick={() => fileInputRef.current?.click()} onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }} onDragLeave={e => e.currentTarget.classList.remove('drag-over')} onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const files = Array.from(e.dataTransfer.files); setUploadedFiles(prev => [...prev, ...files]); }}><input ref={fileInputRef} type="file" className="file-upload-input" multiple onChange={e => { const files = Array.from(e.target.files); setUploadedFiles(prev => [...prev, ...files]); }} /><div className="file-upload-content"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><p className="file-upload-title">Click or drag files to upload</p><p className="file-upload-hint">PDF, DOC, DOCX, JPG, PNG up to 10MB each</p></div></div>{uploadedFiles.length > 0 && (<div className="file-upload-list">{uploadedFiles.map((file, idx) => (<div key={idx} className="file-upload-item"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span className="file-upload-name">{file.name}</span><span className="file-upload-size">{(file.size / 1024).toFixed(1)} KB</span><button type="button" className="file-upload-remove" onClick={() => setUploadedFiles(prev => prev.filter((_, i) => i !== idx))} title="Remove file"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>))}</div>)}</div>
+                </div>
+                <div className="leave-form-row leave-form-row--full">
+                  <div className="form-group">
+                    <label className="form-label">Supporting Documents</label>
+                    <p className="leave-form-hint">Upload supporting documents if required for your transfer request (e.g., medical certificate, approval letter, or other supporting documents). Allowed formats: PDF, JPG, PNG (max 10MB each).</p>
+                    <input type="file" ref={fileInputRef} className="file-upload-input" accept=".pdf,.jpg,.jpeg,.png" onChange={e => {
+                      const files = Array.from(e.target.files);
+                      if (replaceIndex !== null) {
+                        setUploadedFiles(prev => prev.map((f, i) => i === replaceIndex ? files[0] : f));
+                        setReplaceIndex(null);
+                      } else {
+                        setUploadedFiles(prev => [...prev, ...files]);
+                      }
+                      e.target.value = '';
+                    }} />
+                    <div className="support-upload-actions">
+                      <button type="button" className="btn btn-secondary" onClick={() => { setReplaceIndex(null); fileInputRef.current?.click(); }}>Upload Document</button>
+                    </div>
+                    {uploadedFiles.length > 0 && (
+                      <div className="support-attachments-list" style={{ marginTop: 16 }}>
+                        {uploadedFiles.map((file, idx) => (
+                          <div key={idx} className="attachment-row">
+                            <div className="attachment-icon">
+                              {file.type === 'application/pdf' ? (
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                              ) : (
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                              )}
+                            </div>
+                            <div className="attachment-info">
+                              <p className="attachment-name">{file.name}</p>
+                              <p className="attachment-hint">{(file.size / 1024).toFixed(1)} KB</p>
+                            </div>
+                            <div className="attachment-actions">
+                              <button type="button" className="btn btn-sm btn-primary" onClick={() => { const url = URL.createObjectURL(file); window.open(url, '_blank'); }}>Preview</button>
+                              <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setReplaceIndex(idx); fileInputRef.current?.click(); }}>Replace</button>
+                              <button type="button" className="btn btn-sm btn-secondary" onClick={() => setUploadedFiles(prev => prev.filter((_, i) => i !== idx))}>Remove</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </form>
@@ -179,7 +456,7 @@ function TransferPage() {
               showFilters={showFilters}
               onToggleFilters={() => setShowFilters(v => !v)}
               filters={[
-                { key: 'type', label: 'Transfer Type', options: ['Regional Transfer', 'Departmental Transfer', 'Promotion Transfer', 'Temporary Transfer', 'Inter-Agency Transfer'].map(t => ({ value: t, label: t })) },
+                { key: 'type', label: 'Transfer Type', options: ['Medical grounds', 'Family reasons (spouse, mother, or father)', 'Professional / career reasons', 'Others'].map(t => ({ value: t, label: t })) },
                 { key: 'status', label: 'Status', options: ['Approved', 'Pending', 'Rejected'].map(s => ({ value: s, label: s })) },
               ]}
               loading={isLoading}
@@ -190,10 +467,10 @@ function TransferPage() {
                   <button className="action-btn action-btn--view" onClick={() => setSelectedTransfer(row)} title="View Details">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </button>
-                  <button className="action-btn action-btn--download" onClick={() => alert('Downloading ' + row.id)} title="Download">
+                  <button className="action-btn action-btn--download" onClick={() => downloadTransferRecord(row)} title="Download">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </button>
-                  <button className="action-btn action-btn--print" onClick={() => alert('Printing ' + row.id)} title="Print">
+                  <button className="action-btn action-btn--print" onClick={() => printTransferRecord(row)} title="Print">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                   </button>
                 </div>
@@ -202,7 +479,7 @@ function TransferPage() {
             />
 
             {selectedTransfer && (
-              <Modal isOpen={!!selectedTransfer} onClose={() => setSelectedTransfer(null)} title={`Transfer Details - ${selectedTransfer.id}`}>
+              <Modal isOpen={!!selectedTransfer} onClose={() => setSelectedTransfer(null)} title={`Transfer Details - ${selectedTransfer.id}`} footer={<button className="btn btn-secondary" onClick={() => setSelectedTransfer(null)}>Close</button>}>
                 <div className="leave-detail-modal">
                   <div className="leave-detail-status-bar">
                     <span className="leave-detail-status-label">Status</span>
@@ -269,12 +546,64 @@ function TransferPage() {
                     <span className="leave-doc-tag" style={{ background: STATUS_STYLE[row.status]?.background, color: STATUS_STYLE[row.status]?.color }}>{row.status}</span>
                   </div>
                   <div className="leave-doc-actions">
-                    <button className="btn btn-sm btn-secondary">Preview</button>
-                    <button className="btn btn-sm btn-primary" onClick={() => alert('Downloading ' + row.id)}>Download PDF</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => handlePreviewConfirmation(row)}>Preview</button>
+                    <button className="btn btn-sm btn-primary" onClick={() => handleDownloadConfirmation(row)}>Download PDF</button>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Confirmation Letter View Modal */}
+            {selectedConfirmationLetter && (
+              <Modal
+                isOpen={!!selectedConfirmationLetter}
+                onClose={() => setSelectedConfirmationLetter(null)}
+                title={(
+                  <div className="doc-preview-header">
+                    <div className="doc-preview-header-title">Transfer Confirmation Letter</div>
+                    <div className="doc-preview-header-subtitle">Reference No: {selectedConfirmationLetter.id} &middot; {selectedConfirmationLetter.status}</div>
+                  </div>
+                )}
+                className="doc-preview-modal"
+                footer={(
+                  <div className="doc-preview-footer">
+                    <button className="btn btn-secondary" onClick={() => setSelectedConfirmationLetter(null)}>Close</button>
+                    <button className="btn btn-primary" onClick={() => handleDownloadConfirmation(selectedConfirmationLetter)}>Download</button>
+                  </div>
+                )}
+              >
+                <div className="transfer-detail-modal">
+                  <div className="transfer-detail-section">
+                    <h5 className="transfer-detail-section-title">Employee Information</h5>
+                    <div className="transfer-detail-grid">
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Full Name</span><span className="transfer-detail-value">John Michael Doe</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Employee ID</span><span className="transfer-detail-value">EMP-2024-00542</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Designation</span><span className="transfer-detail-value">Senior HR Officer</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Department</span><span className="transfer-detail-value">Human Resources</span></div>
+                    </div>
+                  </div>
+                  <div className="transfer-detail-section">
+                    <h5 className="transfer-detail-section-title">Transfer Details</h5>
+                    <div className="transfer-detail-grid">
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Transfer Type</span><span className="transfer-detail-value">{selectedConfirmationLetter.type}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Reference ID</span><span className="transfer-detail-value">{selectedConfirmationLetter.id}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">From Station</span><span className="transfer-detail-value">{selectedConfirmationLetter.period.split(' to ')[0]}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">To Station</span><span className="transfer-detail-value">{selectedConfirmationLetter.period.split(' to ')[1]}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Effective Date</span><span className="transfer-detail-value">{selectedConfirmationLetter.effectiveDate}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Status</span><span className="transfer-detail-value">{selectedConfirmationLetter.status}</span></div>
+                    </div>
+                  </div>
+                  <div className="transfer-detail-section">
+                    <h5 className="transfer-detail-section-title">Official Approval</h5>
+                    <p className="transfer-detail-text">This is to confirm that the above-named employee has been officially approved for transfer as per the details stated. The employee is hereby directed to report to the new station on the effective date indicated.</p>
+                  </div>
+                  <div className="transfer-detail-section">
+                    <h5 className="transfer-detail-section-title">Acknowledgement</h5>
+                    <p className="transfer-detail-text">I hereby acknowledge receipt of this transfer confirmation letter and understand the terms stated herein.</p>
+                  </div>
+                </div>
+              </Modal>
+            )}
           </>
         )}
       </main>

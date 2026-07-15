@@ -190,7 +190,7 @@ function PerformancePage() {
             />
 
             {selectedReview && (
-              <Modal isOpen={!!selectedReview} onClose={() => setSelectedReview(null)} title={`Appraisal Details - ${selectedReview.id}`} size="md">
+              <Modal isOpen={!!selectedReview} onClose={() => setSelectedReview(null)} title={`Appraisal Details - ${selectedReview.id}`} size="md" footer={<button className="btn btn-secondary" onClick={() => setSelectedReview(null)}>Close</button>}>
                 <div className="leave-detail-modal">
                   <div className="leave-detail-section">
                     <div className="leave-detail-grid">

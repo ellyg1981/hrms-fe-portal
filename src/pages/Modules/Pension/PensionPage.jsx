@@ -210,7 +210,7 @@ function PensionPage() {
             />
 
             {selectedRecord && (
-              <Modal isOpen={!!selectedRecord} onClose={() => setSelectedRecord(null)} title={`Contribution Details - ${selectedRecord.id}`} size="md">
+              <Modal isOpen={!!selectedRecord} onClose={() => setSelectedRecord(null)} title={`Contribution Details - ${selectedRecord.id}`} size="md" footer={<button className="btn btn-secondary" onClick={() => setSelectedRecord(null)}>Close</button>}>
                 <div className="leave-detail-modal">
                   <div className="leave-detail-section">
                     <div className="leave-detail-grid">

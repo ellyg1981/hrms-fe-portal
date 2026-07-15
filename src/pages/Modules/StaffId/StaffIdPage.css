@@ -16,7 +16,7 @@
 }
 
 .staffid-quick-card {
-  padding: var(--space-5);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -162,14 +162,14 @@
 .id-card-preview-wrap {
   display: flex;
   justify-content: center;
-  padding: var(--space-6);
+  padding: var(--space-4);
 }
 
 .id-card-visual {
   width: 340px;
   background: linear-gradient(135deg, var(--color-primary) 0%, #123A6F 100%);
   color: var(--color-white);
-  padding: var(--space-6);
+  padding: var(--space-4);
   border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
@@ -384,7 +384,7 @@
 
 /* ── Declaration ── */
 .staffid-declaration {
-  padding: var(--space-6);
+  padding: var(--space-4);
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
@@ -454,8 +454,8 @@
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
-  padding: var(--space-5) var(--space-6);
-  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
   text-align: left;
 }
 
@@ -552,7 +552,7 @@
   background: var(--color-white);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: var(--space-4);
   margin-bottom: var(--space-5);
 }
 
@@ -607,7 +607,7 @@
   background: var(--color-white);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: var(--space-4);
 }
 
 .staffid-tracker-panel-title {

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
+import LocationGroup from '../../../components/common/location/LocationGroup';
 import './StaffIdPage.css';
 
 const ID_CARD = {
@@ -86,6 +87,7 @@ function StaffIdPage() {
   const fileInputRefs = useRef({});
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [editingApp, setEditingApp] = useState(null);
+  const [residentialLocation, setResidentialLocation] = useState({ region: '', district: '', ward: '' });
   const [trackingApp, setTrackingApp] = useState(APPLICATIONS[4]);
 
   const openApp = (app) => { setSelectedApp(app); setModalTab('info'); };
@@ -234,6 +236,22 @@ function StaffIdPage() {
                       <div className="leave-form-row">
                         <div className="form-group"><label className="form-label">Application Type</label><select className="form-input form-select"><option>New Staff ID</option><option>Replacement</option><option>Renewal</option></select></div>
                         <div className="form-group"><label className="form-label">Reason for Application</label><select className="form-input form-select" value={appReason} onChange={e => setAppReason(e.target.value)}>{Object.keys(REASON_ATTACHMENTS).map(r => <option key={r}>{r}</option>)}</select></div>
+                      </div>
+                    </div>
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Residential Address</h4>
+                      <div className="leave-form-row">
+                        <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                          <LocationGroup
+                            region={residentialLocation.region}
+                            district={residentialLocation.district}
+                            ward={residentialLocation.ward}
+                            onChange={setResidentialLocation}
+                            labels={{ region: 'Region', district: 'District', ward: 'Ward' }}
+                          />
+                        </div>
+                        <div className="form-group"><label className="form-label">Village / Street</label><input type="text" className="form-input" placeholder="e.g. Uhuru Street" /></div>
+                        <div className="form-group"><label className="form-label">House Number</label><input type="text" className="form-input" placeholder="e.g. Plot 123" /></div>
                       </div>
                     </div>
                   </>
@@ -445,7 +463,7 @@ function StaffIdPage() {
         )}
 
         {selectedApp && (
-          <Modal isOpen={!!selectedApp} onClose={() => setSelectedApp(null)} title={`Application Details - ${selectedApp.id}`}>
+          <Modal isOpen={!!selectedApp} onClose={() => setSelectedApp(null)} title={`Application Details - ${selectedApp.id}`} footer={<button className="btn btn-secondary" onClick={() => setSelectedApp(null)}>Close</button>}>
             <div className="staffid-modal-tabs">
               {[{ key: 'info', label: 'Application Info' }, { key: 'attachments', label: 'Attachments' }, { key: 'preview', label: 'ID Preview' }, { key: 'timeline', label: 'Timeline' }].map(t => (
                 <button key={t.key} className={`staffid-modal-tab ${modalTab === t.key ? 'active' : ''}`} onClick={() => setModalTab(t.key)}>{t.label}</button>

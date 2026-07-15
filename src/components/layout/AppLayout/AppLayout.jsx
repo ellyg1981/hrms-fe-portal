@@ -6,7 +6,7 @@ import Sidebar from '../Sidebar/Sidebar';
 import Header from '../Header/Header';
 import './AppLayout.css';
 
-function AppLayout({ children, title, subtitle }) {
+function AppLayout({ children, title, subtitle, headerRight }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -93,7 +93,6 @@ function AppLayout({ children, title, subtitle }) {
       '/modules/training': 'Training',
       '/modules/announcements': 'Announcements',
       '/modules/documents': 'Documents',
-      '/modules/performance': 'Performance',
       '/modules/salary': 'Salary',
       '/modules/staff-id': 'Staff ID',
     };
@@ -203,6 +202,7 @@ function AppLayout({ children, title, subtitle }) {
                 <h1 className="page-title">{title}</h1>
                 {subtitle && <p className="page-subtitle">{subtitle}</p>}
               </div>
+              {headerRight && <div className="page-header-actions">{headerRight}</div>}
             </div>
           )}
           {children}

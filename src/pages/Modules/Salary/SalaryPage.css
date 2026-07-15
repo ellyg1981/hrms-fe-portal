@@ -13,13 +13,23 @@
 }
 
 .sal-view-btn {
-  height: 44px;
-  padding: 0 24px;
+  height: 48px;
+  padding: 0 28px;
+  font-size: 15px;
   flex-shrink: 0;
 }
 
+.sal-select-group .form-label {
+  font-size: 14px;
+}
+
+.sal-select-group .form-input {
+  font-size: 15px;
+  height: 48px;
+}
+
 .sal-slip-card .card {
-  padding: var(--space-8);
+  padding: var(--space-4);
 }
 
 .sal-slip-header {
@@ -32,7 +42,7 @@
 }
 
 .sal-slip-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   font-weight: 700;
   color: var(--color-primary);
   margin: 0;
@@ -42,14 +52,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 36px;
-  padding: 0 16px;
+  height: 48px;
+  padding: 0 20px;
   background: var(--color-sky-blue);
   color: var(--color-primary);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   font-family: var(--font-family);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -71,15 +81,15 @@
 .sal-emp-field {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 12px 16px;
+  gap: 4px;
+  padding: 16px 20px;
   border-right: 1px solid var(--color-border);
 }
 
 .sal-emp-field:last-child { border-right: none; }
 
 .sal-emp-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--color-primary-dark);
   text-transform: uppercase;
@@ -87,7 +97,7 @@
 }
 
 .sal-emp-value {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-primary);
 }
@@ -101,10 +111,10 @@
 }
 
 .sal-table-head {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.06em;
-  padding: 8px 14px;
+  padding: 10px 18px;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   color: var(--color-white);
 }
@@ -112,7 +122,7 @@
 .sal-table-head.earn   { background: var(--color-primary); }
 .sal-table-head.deduct { background: var(--color-gold); }
 
-.sal-table { font-size: 13px; }
+.sal-table { font-size: 15px; }
 
 .sal-amount      { text-align: right; font-weight: 600; color: var(--color-primary); }
 .sal-amount.gold { color: var(--color-gold); }
@@ -131,17 +141,27 @@
   background: var(--color-primary);
   color: var(--color-white);
   border-radius: var(--radius-lg);
-  padding: 10px 24px;
-  font-size: 15px;
+  padding: 14px 28px;
+  font-size: 18px;
   font-weight: 700;
   margin-top: 4px;
 }
 
-.sal-net-amount { font-size: 22px; font-weight: 800; }
+.sal-net-amount { font-size: 28px; font-weight: 800; }
+
+@media (max-width: 1024px) {
+  .sal-slip-title { font-size: var(--font-size-xl); }
+  .sal-net-amount { font-size: 24px; }
+}
 
 @media (max-width: 768px) {
   .sal-tables { grid-template-columns: 1fr; }
   .sal-emp-band { grid-template-columns: 1fr; }
-  .sal-emp-field { border-right: none; border-bottom: 1px solid var(--color-border); }
+  .sal-emp-field { border-right: none; border-bottom: 1px solid var(--color-border); padding: 14px 18px; }
   .sal-emp-field:last-child { border-bottom: none; }
+  .sal-slip-title { font-size: var(--font-size-lg); }
+  .sal-download-btn { font-size: 14px; height: 48px; }
+  .sal-net-bar { font-size: 16px; padding: 12px 22px; }
+  .sal-net-amount { font-size: 22px; }
+  .sal-table { font-size: 14px; }
 }

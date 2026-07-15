@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Card from '../../../components/common/Card/Card';
+import html2pdf from 'html2pdf.js';
 import './SalaryPage.css';
 
 const SALARY_DATA = {
@@ -24,32 +25,66 @@ function SalaryPage() {
   const totalDeduct = Object.values(d.deductions).reduce((a,b)=>a+b,0);
 
   const downloadSlip = () => {
-    const win = window.open('', '_blank');
-    if (!win) return;
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Salary Slip</title><style>
-      body{font-family:Arial,sans-serif;font-size:11pt;margin:0;padding:24px;color:#111}
-      .hdr{text-align:center;border-bottom:2px solid #0B2E59;padding-bottom:12px;margin-bottom:16px}
-      .hdr h1{font-size:13pt;text-transform:uppercase;color:#0B2E59;margin:0 0 3px}
-      .meta{display:flex;justify-content:space-between;margin-bottom:16px;font-size:10pt}
-      table{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:14px}
-      th{background:#0B2E59;color:white;padding:7px 10px;text-align:left}
-      td{padding:6px 10px;border-bottom:1px solid #E5E7EB}
-      .net{background:#0B2E59;color:white;padding:12px 16px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;font-size:12pt;font-weight:700}
-    </style></head><body>
-    <div class="hdr"><h1>Tanzania Immigration Services Department</h1><h2>Wizara ya Mambo ya Ndani ya Nchi</h2><h3>EMPLOYEE SALARY SLIP &mdash; ${selMonth.toUpperCase()} ${selYear}</h3></div>
-    <div class="meta"><span>Name: <strong>John Doe</strong></span><span>Check No: <strong>CH-78432</strong></span></div>
-    <table><thead><tr><th>Earnings</th><th>Amount (TZS)</th><th>Deductions</th><th>Amount (TZS)</th></tr></thead><tbody>
-    <tr><td>Basic Salary</td><td>${fmt(d.basic)}</td><td>PAYE</td><td>${fmt(d.deductions.paye)}</td></tr>
-    <tr><td>House Allowance</td><td>${fmt(d.allowances.house)}</td><td>PSPF (6.5%)</td><td>${fmt(d.deductions.pspf)}</td></tr>
-    <tr><td>Transport Allowance</td><td>${fmt(d.allowances.transport)}</td><td>NHIF</td><td>${fmt(d.deductions.nhif)}</td></tr>
-    <tr><td>Medical Allowance</td><td>${fmt(d.allowances.medical)}</td><td>Loan Repayment</td><td>${fmt(d.deductions.loan)}</td></tr>
-    <tr><td><strong>Total Earnings</strong></td><td><strong>${fmt(totalEarn)}</strong></td><td><strong>Total Deductions</strong></td><td><strong>${fmt(totalDeduct)}</strong></td></tr>
-    </tbody></table>
-    <div class="net"><span>NET PAY</span><span>TZS ${fmt(d.net)}</span></div>
-    </body></html>`;
-    win.document.write(html);
-    win.document.close();
-    setTimeout(() => win.print(), 500);
+    const fmt2 = (n) => n.toLocaleString('en-TZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.innerHTML = `<style>
+      .slip-wrap{font-family:'Courier New',Courier,monospace;font-size:11pt;padding:32px 40px;color:#111;line-height:1.45;background:#fff;width:210mm}
+      .hdr-table{width:100%;border-collapse:collapse;font-size:11pt;margin-bottom:2px}
+      .hdr-table td{padding:0;white-space:nowrap}
+      .hdr-left{text-align:left}
+      .hdr-right{text-align:right;font-weight:bold}
+      .hdr-row2{width:100%;border-collapse:collapse;font-size:11pt;margin-bottom:4px}
+      .hdr-row2 td{padding:0;white-space:nowrap}
+      .hdr-row2 .hdr-left{text-align:left}
+      .hdr-row2 .hdr-right{text-align:right}
+      .hdr-rule{width:100%;height:0.5px;background:#D8D8D8;border:none;margin:10px 0 40px}
+      table{width:100%;border-collapse:collapse;font-size:11pt}
+      th{text-align:left;padding:3px 0 1px;border-bottom:1px solid #111;font-weight:normal}
+      td{padding:1px 0;vertical-align:top;white-space:nowrap}
+      .desc{width:100%;white-space:normal}
+      .bal{text-align:right;padding-right:24px}
+      .amt{text-align:right}
+      .sep{font-size:10pt;letter-spacing:2px;margin:4px 0 3px}
+      .net td{padding-top:3px;font-weight:bold}
+    </style>
+    <div class="slip-wrap">
+      <table class="hdr-table"><tr><td class="hdr-left">93 1000 10000000</td><td class="hdr-right">GOODLUCK E MSUYA</td></tr></table>
+      <table class="hdr-row2"><tr><td class="hdr-left">93-000 20/08/2041</td><td class="hdr-right">TGP SW/5/2</td></tr></table>
+      <hr class="hdr-rule">
+      <table>
+        <thead><tr><th class="desc">DESCRIPTION</th><th class="bal">BALANCE</th><th class="amt">AMOUNT</th></tr></thead>
+        <tbody>
+          <tr><td class="desc">Basic Salary</td><td class="bal"></td><td class="amt">${fmt2(d.basic)}</td></tr>
+          <tr><td class="desc">Housing Allowances</td><td class="bal"></td><td class="amt">${fmt2(d.allowances.house)}</td></tr>
+          <tr><td class="desc">Professional Allowances</td><td class="bal"></td><td class="amt">${fmt2(307200)}</td></tr>
+          <tr><td class="desc">Special Skills Allowance (Immigration)</td><td class="bal"></td><td class="amt">${fmt2(245760)}</td></tr>
+          <tr><td class="desc">Public Service Social Security Fund</td><td class="bal"></td><td class="amt">-${fmt2(d.deductions.pspf)}</td></tr>
+          <tr><td class="desc">Pay As You Earn (PAYE)</td><td class="bal"></td><td class="amt">-${fmt2(d.deductions.paye)}</td></tr>
+          <tr><td class="desc">UHAMIAJI SACCOS CONTR</td><td class="bal"></td><td class="amt">-${fmt2(50000)}</td></tr>
+          <tr><td class="desc">UHAMIAJI SACCOS LOAN</td><td class="bal">${fmt2(13027579.92)}</td><td class="amt">-${fmt2(d.deductions.loan)}</td></tr>
+          <tr><td class="desc">National Health Insurance Fund Employer for Police</td><td class="bal"></td><td class="amt">-${fmt2(0)}</td></tr>
+        </tbody>
+      </table>
+      <div class="sep">******************************************************************************************</div>
+      <table class="net"><tr><td class="desc">NET AMOUNT DUE</td><td class="bal">30/06/2026</td><td class="amt">${fmt2(d.net)}</td></tr></table>
+      <div class="sep">******************************************************************************************</div>
+    </div>`;
+    document.body.appendChild(container);
+
+    const opt = {
+      margin: 0,
+      filename: `SalarySlip_CH-78432_${selMonth}_${selYear}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(container.querySelector('.slip-wrap')).save().then(() => {
+      document.body.removeChild(container);
+    });
   };
 
   return (

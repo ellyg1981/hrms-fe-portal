@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   z-index: 200;
-  padding: var(--space-5);
+  padding: var(--space-4);
   animation: modalFadeIn 0.2s ease;
 }
 
@@ -42,23 +42,67 @@
   max-width: 1080px;
 }
 
+/* Registration Modal — same width as Apply for Leave */
+.modal-content.registration-modal {
+  max-width: 1080px;
+}
+
+/* Document Preview Modal — wide for document viewing */
+.modal-content.doc-preview-modal {
+  max-width: 960px;
+  width: 100%;
+}
+
 @media (max-width: 1200px) {
   .modal-content.apply-leave-modal {
     max-width: 92vw;
   }
+  .modal-content.registration-modal {
+    max-width: 92vw;
+  }
+  .modal-content.doc-preview-modal {
+    max-width: 92vw;
+  }
+}
+
+@media (max-width: 1023px) {
+  .modal-size-xl { max-width: 92vw; }
+  .modal-size-lg { max-width: 92vw; }
+  .modal-content.apply-leave-modal { max-width: 96vw; }
+  .modal-content.registration-modal { max-width: 96vw; }
+}
+
+@media (max-width: 767px) {
+  .modal-size-md { max-width: 96vw; }
+  .modal-size-lg { max-width: 100%; }
+  .modal-size-xl { max-width: 100%; }
+  .modal-content.apply-leave-modal { max-width: 100%; }
+  .modal-content.registration-modal { max-width: 100%; }
+  .modal-content.doc-preview-modal { max-width: 100%; }
+  .modal-body { padding: var(--space-4); }
+  .modal-header { padding: var(--space-4); }
+  .modal-footer { padding: 10px var(--space-4); }
 }
 
 @media (max-width: 640px) {
+  .modal-content { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
   .modal-content.apply-leave-modal {
     max-width: 100%;
   }
+  .modal-content.registration-modal {
+    max-width: 100%;
+  }
+  .modal-content.doc-preview-modal {
+    max-width: 100%;
+  }
+  .modal-overlay { padding: var(--space-2); align-items: flex-end; }
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-5) var(--space-6);
+  padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
@@ -88,7 +132,7 @@
 }
 
 .modal-body {
-  padding: var(--space-5) var(--space-6);
+  padding: var(--space-4) var(--space-5);
   overflow-y: auto;
   flex: 1;
 }
@@ -98,7 +142,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-6);
+  padding: 10px var(--space-5);
   border-top: 1px solid var(--color-border-light);
   background: var(--color-white);
   flex-shrink: 0;
@@ -346,7 +390,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-5);
+  padding: var(--space-4);
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);

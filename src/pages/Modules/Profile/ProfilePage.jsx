@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Card from '../../../components/common/Card/Card';
+import LocationGroup from '../../../components/common/location/LocationGroup';
 import './ProfilePage.css';
 
 const TABS = [
@@ -60,6 +61,7 @@ function InfoRow({ label, value }) {
 function ProfilePage() {
   const [activeTab, setActiveTab] = useState('personal');
   const [showEditModal, setShowEditModal] = useState(false);
+  const [profileLocation, setProfileLocation] = useState({ region: '', district: '', ward: '' });
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -174,10 +176,30 @@ function ProfilePage() {
             <div className="modal-content" onClick={e => e.stopPropagation()}>
               <div className="modal-header"><h3>Edit Profile</h3><button className="modal-close" onClick={() => setShowEditModal(false)}>&times;</button></div>
               <div className="modal-body">
-                <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" defaultValue="John Doe" /></div>
-                <div className="form-group"><label className="form-label">Phone</label><input className="form-input" defaultValue="+255 712 345 678" /></div>
-                <div className="form-group"><label className="form-label">Email</label><input className="form-input" defaultValue="john.doe@hrms.go.tz" /></div>
-                <div className="form-group"><label className="form-label">Address</label><textarea className="form-input" rows="2" defaultValue="123 Uhuru Street, Dar es Salaam"></textarea></div>
+                <div className="leave-form-section">
+                  <h4 className="leave-form-section-title">Personal Information</h4>
+                  <div className="leave-form-row">
+                    <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" defaultValue="John Doe" /></div>
+                    <div className="form-group"><label className="form-label">Phone</label><input className="form-input" defaultValue="+255 712 345 678" /></div>
+                    <div className="form-group"><label className="form-label">Email</label><input className="form-input" defaultValue="john.doe@hrms.go.tz" /></div>
+                  </div>
+                </div>
+                <div className="leave-form-section">
+                  <h4 className="leave-form-section-title">Residential Address</h4>
+                  <div className="leave-form-row">
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <LocationGroup
+                        region={profileLocation.region}
+                        district={profileLocation.district}
+                        ward={profileLocation.ward}
+                        onChange={setProfileLocation}
+                        labels={{ region: 'Region', district: 'District', ward: 'Ward' }}
+                      />
+                    </div>
+                    <div className="form-group"><label className="form-label">Village / Street</label><input className="form-input" placeholder="e.g. Uhuru Street" /></div>
+                    <div className="form-group"><label className="form-label">House Number</label><input className="form-input" placeholder="e.g. Plot 123" /></div>
+                  </div>
+                </div>
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>

@@ -190,7 +190,7 @@ function LoanPage() {
             />
 
             {selectedLoan && (
-              <Modal isOpen={!!selectedLoan} onClose={() => setSelectedLoan(null)} title={`Loan Details - ${selectedLoan.id}`} size="md">
+              <Modal isOpen={!!selectedLoan} onClose={() => setSelectedLoan(null)} title={`Loan Details - ${selectedLoan.id}`} size="md" footer={<button className="btn btn-secondary" onClick={() => setSelectedLoan(null)}>Close</button>}>
                 <div className="leave-detail-modal">
                   <div className="leave-detail-section">
                     <div className="leave-detail-grid">

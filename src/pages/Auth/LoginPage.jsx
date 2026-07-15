@@ -92,7 +92,8 @@ function LoginPage() {
 
         <div className="login-right">
           <h1 className="login-title">Welcome</h1>
-          <p className="login-subtitle">Login into the Employee Self Service</p>
+          {/* <p className="login-subtitle">Login into the Employee Self Service</p> */}
+          <p className="login-subtitle">Login to: TISD Employee Self Service</p>
 
           {loginError && <div className="login-error-banner">{loginError}</div>}
 
