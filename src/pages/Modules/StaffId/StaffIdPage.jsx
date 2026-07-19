@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
-import LocationGroup from '../../../components/common/location/LocationGroup';
+import { notificationService } from '../../../components/Notifications/notificationService';
 import './StaffIdPage.css';
 
 const ID_CARD = {
@@ -64,8 +64,8 @@ const STATUS_STYLE = {
 };
 
 const TAB_ICONS = {
-  my: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
-  status: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  my: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  status: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
 };
 
 const TABS = [
@@ -73,38 +73,148 @@ const TABS = [
   { key: 'status', label: 'Request Status' },
 ];
 
-const STEPS = ['Application Details', 'Attachments', 'ID Preview', 'Declaration', 'Submit'];
+const STEPS = ['Employee Verification', 'Personal Information', 'Request New ID', 'Declaration', 'Submit'];
+
+const DEMO_EMPLOYEES = [
+  { employeeId: 1, employeeNumber: 'EMP-001', fullName: 'John Michael Mushi', email: 'john.mushi@example.go.tz', phone: '+255712345678', department: 'Human Resource Management', designation: 'HR Officer', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', workingStation: 'Immigration Headquarters', nin: '19900101-12345-00001-01', checkNumber: 'CHK-00012345', bloodGroup: 'A+' },
+  { employeeId: 2, employeeNumber: 'EMP-002', fullName: 'Asha Hamisi Juma', email: 'asha.juma@example.go.tz', phone: '+255722334455', department: 'Immigration Services', designation: 'Immigration Officer', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', workingStation: 'Immigration Headquarters', nin: '19880515-23456-00002-02', checkNumber: 'CHK-00012346', bloodGroup: 'B+' },
+  { employeeId: 3, employeeNumber: 'EMP-003', fullName: 'Peter Emmanuel Mwita', email: 'peter.mwita@example.go.tz', phone: '+255733445566', department: 'Finance', designation: 'Finance Officer', territory: 'Tanzania Mainland', workingRegion: 'Dodoma', workingStation: 'Immigration Headquarters', nin: '19920320-34567-00003-03', checkNumber: 'CHK-00012347', bloodGroup: 'O+' },
+  { employeeId: 4, employeeNumber: 'EMP-004', fullName: 'Neema Joseph Mollel', email: 'neema.mollel@example.go.tz', phone: '+255744556677', department: 'ICT', designation: 'Systems Analyst', territory: 'Tanzania Mainland', workingRegion: 'Arusha', workingStation: 'Arusha Regional Office', nin: '19950712-45678-00004-04', checkNumber: 'CHK-00012348', bloodGroup: 'AB+' },
+  { employeeId: 5, employeeNumber: 'EMP-005', fullName: 'David Robert Kweka', email: 'david.kweka@example.go.tz', phone: '+255755667788', department: 'Administration', designation: 'Administrative Officer', territory: 'Tanzania Mainland', workingRegion: 'Mwanza', workingStation: 'Mwanza Regional Office', nin: '19891225-56789-00005-05', checkNumber: 'CHK-00012349', bloodGroup: 'O-' },
+];
 
 function StaffIdPage() {
   const [activeTab, setActiveTab] = useState('my');
   const [step, setStep] = useState(1);
   const [selectedApp, setSelectedApp] = useState(null);
   const [modalTab, setModalTab] = useState('info');
-  const [declared, setDeclared] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [appReason, setAppReason] = useState('New Staff ID');
-  const [uploadedFiles, setUploadedFiles] = useState({});
-  const fileInputRefs = useRef({});
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [editingApp, setEditingApp] = useState(null);
-  const [residentialLocation, setResidentialLocation] = useState({ region: '', district: '', ward: '' });
   const [trackingApp, setTrackingApp] = useState(APPLICATIONS[4]);
+
+  const [verifyForm, setVerifyForm] = useState({ checkNumber: '', nin: '' });
+  const [verifyError, setVerifyError] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifiedEmployee, setVerifiedEmployee] = useState(null);
+  const [isVerified, setIsVerified] = useState(false);
+
+  const [personalInfo, setPersonalInfo] = useState({
+    territory: '', workingRegion: '', workingStation: '', department: '',
+    mobileNumber: '', emailAddress: '', bloodGroup: '', photo: null,
+  });
+  const photoInputRef = useRef(null);
+
+  const [requestDetails, setRequestDetails] = useState({
+    idType: 'New Staff ID', comments: '', supportingDoc: null,
+  });
+  const docInputRef = useRef(null);
+
+  const [declared, setDeclared] = useState(false);
+  const [declarationTimestamp, setDeclarationTimestamp] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [requestRef, setRequestRef] = useState('');
 
   const openApp = (app) => { setSelectedApp(app); setModalTab('info'); };
 
   const openCorrection = (app) => {
     setEditingApp(app);
-    setAppReason(app.reason);
     setShowRequestModal(true);
     setStep(1);
     setSubmitted(false);
     setDeclared(false);
+    setIsVerified(false);
+    setVerifiedEmployee(null);
+    setVerifyForm({ checkNumber: '', nin: '' });
+    setVerifyError('');
+    setPersonalInfo({ territory: '', workingRegion: '', workingStation: '', department: '', mobileNumber: '', emailAddress: '', bloodGroup: '', photo: null });
+    setRequestDetails({ idType: 'New Staff ID', comments: '', supportingDoc: null });
+    setDeclarationTimestamp(null);
   };
 
-  const handleFile = (field, e) => {
+  const openNewRequest = () => {
+    setEditingApp(null);
+    setShowRequestModal(true);
+    setStep(1);
+    setSubmitted(false);
+    setDeclared(false);
+    setIsVerified(false);
+    setVerifiedEmployee(null);
+    setVerifyForm({ checkNumber: '', nin: '' });
+    setVerifyError('');
+    setPersonalInfo({ territory: '', workingRegion: '', workingStation: '', department: '', mobileNumber: '', emailAddress: '', bloodGroup: '', photo: null });
+    setRequestDetails({ idType: 'New Staff ID', comments: '', supportingDoc: null });
+    setDeclarationTimestamp(null);
+  };
+
+  const handleVerify = () => {
+    setVerifyError('');
+    if (!verifyForm.checkNumber.trim() && !verifyForm.nin.trim()) {
+      setVerifyError('Please enter either your Check Number or National ID (NIN).');
+      return;
+    }
+    setVerifyLoading(true);
+    setTimeout(() => {
+      setVerifyLoading(false);
+      const found = DEMO_EMPLOYEES.find(emp =>
+        (verifyForm.checkNumber.trim() && emp.checkNumber === verifyForm.checkNumber.trim()) ||
+        (verifyForm.nin.trim() && emp.nin === verifyForm.nin.trim())
+      );
+      if (!found) {
+        setVerifyError('No employee record found. Please verify your Check Number or National ID (NIN), or contact HR support.');
+        setIsVerified(false);
+        setVerifiedEmployee(null);
+        return;
+      }
+      setVerifiedEmployee(found);
+      setIsVerified(true);
+      setPersonalInfo({
+        territory: found.territory || '',
+        workingRegion: found.workingRegion || '',
+        workingStation: found.workingStation || '',
+        department: found.department || '',
+        mobileNumber: found.phone || '',
+        emailAddress: found.email || '',
+        bloodGroup: found.bloodGroup || '',
+        photo: null,
+      });
+    }, 800);
+  };
+
+  const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadedFiles(prev => ({ ...prev, [field]: file }));
+    if (!file.type.match(/image\/jpeg|image\/png/)) {
+      notificationService.warning('Only JPEG and PNG image files are allowed.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => setPersonalInfo(prev => ({ ...prev, photo: ev.target.result }));
+    reader.readAsDataURL(file);
+  };
+
+  const handleDocUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      notificationService.warning('Only PDF files are allowed for supporting documents.');
+      return;
+    }
+    setRequestDetails(prev => ({ ...prev, supportingDoc: file }));
+  };
+
+  const handleDeclaration = (checked) => {
+    setDeclared(checked);
+    if (checked) {
+      setDeclarationTimestamp(new Date().toISOString());
+    } else {
+      setDeclarationTimestamp(null);
+    }
+  };
+
+  const generateRefNumber = () => {
+    const year = new Date().getFullYear();
+    const num = String(Math.floor(Math.random() * 900) + 100);
+    return `SID-${year}-0${num}`;
   };
 
   const renderIdCard = () => (
@@ -140,12 +250,12 @@ function StaffIdPage() {
           subtitle="Manage your official identification and applications"
           color="#0B2E59"
           ctaLabel="Request Staff ID"
-          onCta={() => setShowRequestModal(true)}
+          onCta={openNewRequest}
         />
 
-        <div className="tabs leave-tabs">
+        <div className="reg-tabs">
           {TABS.map(tab => (
-            <button key={tab.key} className={`tab ${activeTab === tab.key ? 'active' : ''}`} onClick={() => { setActiveTab(tab.key); setStep(1); setSubmitted(false); }}>
+            <button key={tab.key} className={`reg-tab ${activeTab === tab.key ? 'active' : ''}`} onClick={() => { setActiveTab(tab.key); setStep(1); setSubmitted(false); }}>
               {TAB_ICONS[tab.key]}{tab.label}
             </button>
           ))}
@@ -164,12 +274,12 @@ function StaffIdPage() {
                 step === 1 ? (
                   <div className="leave-form-actions">
                     <button className="btn btn-secondary" onClick={() => { setShowRequestModal(false); setStep(1); setEditingApp(null); }}>Cancel</button>
-                    <button className="btn btn-primary" onClick={() => setStep(2)}>Next: Attachments</button>
+                    {isVerified && <button className="btn btn-primary" onClick={() => setStep(2)}>Next: Personal Information</button>}
                   </div>
                 ) : step === 2 ? (
                   <div className="leave-form-actions">
                     <button className="btn btn-secondary" onClick={() => setStep(1)}>Previous</button>
-                    <button className="btn btn-primary" onClick={() => setStep(3)}>Next: Preview</button>
+                    <button className="btn btn-primary" onClick={() => setStep(3)}>Next: Request New ID</button>
                   </div>
                 ) : step === 3 ? (
                   <div className="leave-form-actions">
@@ -184,14 +294,12 @@ function StaffIdPage() {
                 ) : step === 5 ? (
                   <div className="leave-form-actions">
                     <button className="btn btn-secondary" onClick={() => setStep(4)}>Previous</button>
-                    <button className="btn btn-secondary" onClick={() => alert('Draft saved')}>Save Draft</button>
-                    <button className="btn btn-primary" onClick={() => setSubmitted(true)}>Submit Application</button>
+                    <button className="btn btn-primary" onClick={() => { setRequestRef(generateRefNumber()); setSubmitted(true); }}>Submit Request</button>
                   </div>
                 ) : null
               ) : (
                 <div className="leave-form-actions">
-                  <button className="btn btn-secondary" onClick={() => { setShowRequestModal(false); setSubmitted(false); setStep(1); setEditingApp(null); }}>Close</button>
-                  <button className="btn btn-primary" onClick={() => { setShowRequestModal(false); setSubmitted(false); setActiveTab('my'); setEditingApp(null); }}>View My Applications</button>
+                  <button className="btn btn-primary" onClick={() => { setShowRequestModal(false); setSubmitted(false); setStep(1); setEditingApp(null); }}>Close</button>
                 </div>
               )
             }
@@ -201,11 +309,11 @@ function StaffIdPage() {
                 <div className="staffid-stepper">
                   {STEPS.map((s, i) => (
                     <React.Fragment key={s}>
-                      <div className={`staffid-step ${step === i + 1 ? 'active' : step > i + 1 ? 'completed' : ''}`}>
+                      <div className={`staffid-step ${step === i + 1 ? 'active' : step > i + 1 ? 'completed' : ''} ${i > 0 && !isVerified ? 'disabled' : ''}`}>
                         <div className="staffid-step-number">{step > i + 1 ? <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg> : i + 1}</div>
                         <span className="staffid-step-label">{s}</span>
                       </div>
-                      {i < STEPS.length - 1 && <div className={`staffid-step-separator ${step > i + 1 ? 'completed' : ''}`} />}
+                      {i < STEPS.length - 1 && <div className={`staffid-step-separator ${step > i + 1 ? 'completed' : ''} ${i === 0 && !isVerified ? 'disabled' : ''}`} />}
                     </React.Fragment>
                   ))}
                 </div>
@@ -220,39 +328,40 @@ function StaffIdPage() {
                       </div>
                     )}
                     <div className="leave-form-section">
-                      <h4 className="leave-form-section-title">Applicant Information</h4>
-                      <div className="leave-form-row">
-                        <div className="form-group"><label className="form-label">Employee Number</label><input type="text" className="form-input" value={ID_CARD.employeeNo} disabled /></div>
-                        <div className="form-group"><label className="form-label">Full Name</label><input type="text" className="form-input" value={ID_CARD.name} disabled /></div>
-                        <div className="form-group"><label className="form-label">Department</label><input type="text" className="form-input" value={ID_CARD.department} disabled /></div>
-                        <div className="form-group"><label className="form-label">Directorate / Unit</label><input type="text" className="form-input" value={ID_CARD.directorate} disabled /></div>
-                        <div className="form-group"><label className="form-label">Designation</label><input type="text" className="form-input" value={ID_CARD.designation} disabled /></div>
-                        <div className="form-group"><label className="form-label">Work Station</label><input type="text" className="form-input" value={ID_CARD.workStation} disabled /></div>
-                        <div className="form-group"><label className="form-label">Office Location</label><input type="text" className="form-input" value={ID_CARD.officeLocation} disabled /></div>
-                      </div>
-                    </div>
-                    <div className="leave-form-section">
-                      <h4 className="leave-form-section-title">Application Details</h4>
-                      <div className="leave-form-row">
-                        <div className="form-group"><label className="form-label">Application Type</label><select className="form-input form-select"><option>New Staff ID</option><option>Replacement</option><option>Renewal</option></select></div>
-                        <div className="form-group"><label className="form-label">Reason for Application</label><select className="form-input form-select" value={appReason} onChange={e => setAppReason(e.target.value)}>{Object.keys(REASON_ATTACHMENTS).map(r => <option key={r}>{r}</option>)}</select></div>
-                      </div>
-                    </div>
-                    <div className="leave-form-section">
-                      <h4 className="leave-form-section-title">Residential Address</h4>
-                      <div className="leave-form-row">
-                        <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                          <LocationGroup
-                            region={residentialLocation.region}
-                            district={residentialLocation.district}
-                            ward={residentialLocation.ward}
-                            onChange={setResidentialLocation}
-                            labels={{ region: 'Region', district: 'District', ward: 'Ward' }}
-                          />
+                      <h4 className="leave-form-section-title">Employee Verification</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Enter either your Check Number or National ID (NIN) to verify your employee record.</p>
+                      {verifyError && <div className="login-modal-error" style={{ marginBottom: 16 }}>{verifyError}</div>}
+                      {isVerified && verifiedEmployee && (
+                        <div className="staffid-verify-success" style={{ marginBottom: 16 }}>
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#059669" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                          <div>
+                            <strong>Employee Verified Successfully</strong>
+                            <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+                              {verifiedEmployee.fullName} &middot; {verifiedEmployee.employeeNumber}
+                            </div>
+                          </div>
                         </div>
-                        <div className="form-group"><label className="form-label">Village / Street</label><input type="text" className="form-input" placeholder="e.g. Uhuru Street" /></div>
-                        <div className="form-group"><label className="form-label">House Number</label><input type="text" className="form-input" placeholder="e.g. Plot 123" /></div>
+                      )}
+                      <div className="leave-form-row">
+                        <div className="form-group">
+                          <label className="form-label">Check Number</label>
+                          <input type="text" className="form-input" value={verifyForm.checkNumber} onChange={e => { setVerifyForm(prev => ({ ...prev, checkNumber: e.target.value })); setVerifyError(''); }} placeholder="e.g. CHK-00012345" disabled={isVerified} />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">National ID (NIN)</label>
+                          <input type="text" className="form-input" value={verifyForm.nin} onChange={e => { setVerifyForm(prev => ({ ...prev, nin: e.target.value })); setVerifyError(''); }} placeholder="e.g. 19900101-12345-00001-01" disabled={isVerified} />
+                        </div>
                       </div>
+                      {!isVerified && (
+                        <button className="btn btn-primary" onClick={handleVerify} disabled={verifyLoading}>
+                          {verifyLoading ? 'Verifying...' : 'Verify Employee'}
+                        </button>
+                      )}
+                      {isVerified && (
+                        <button className="btn btn-secondary" onClick={() => { setIsVerified(false); setVerifiedEmployee(null); setVerifyForm({ checkNumber: '', nin: '' }); }}>
+                          Reset Verification
+                        </button>
+                      )}
                     </div>
                   </>
                 )}
@@ -260,23 +369,63 @@ function StaffIdPage() {
                 {step === 2 && (
                   <>
                     <div className="leave-form-section">
-                      <h4 className="leave-form-section-title">Required Supporting Documents</h4>
-                      <p className="leave-section-desc" style={{ marginTop: -12, marginBottom: 16 }}>Based on reason: <strong>{appReason}</strong>. Allowed formats: PDF, JPG, PNG (max 10MB each).</p>
-                      {(REASON_ATTACHMENTS[appReason] || []).map(att => (
-                        <div key={att.name} className="attachment-row">
-                          <div className="attachment-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                          <div className="attachment-info">
-                            <p className="attachment-name">{att.name}</p>
-                            <p className="attachment-hint">{uploadedFiles[att.name] ? uploadedFiles[att.name].name : 'No file selected'}</p>
-                          </div>
-                          <div className="attachment-status"><span className={`attachment-badge ${att.required ? 'required' : 'optional'}`}>{att.required ? 'Required' : 'Optional'}</span></div>
-                          <div className="attachment-actions">
-                            <input type="file" ref={el => { fileInputRefs.current[att.name] = el; }} className="file-upload-input" accept=".pdf,.jpg,.jpeg,.png" onChange={e => handleFile(att.name, e)} />
-                            <button className="btn btn-sm btn-primary" onClick={() => fileInputRefs.current[att.name]?.click()}>{uploadedFiles[att.name] ? 'Replace' : 'Upload'}</button>
-                            {uploadedFiles[att.name] && <button className="btn btn-sm btn-secondary" onClick={() => setUploadedFiles(prev => { const n = { ...prev }; delete n[att.name]; return n; })}>Remove</button>}
-                          </div>
+                      <h4 className="leave-form-section-title">Personal Information</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Review and complete your personal details below.</p>
+                      <div className="leave-form-row">
+                        <div className="form-group">
+                          <label className="form-label">Territory</label>
+                          <input type="text" className="form-input" value={personalInfo.territory} onChange={e => setPersonalInfo(prev => ({ ...prev, territory: e.target.value }))} placeholder="e.g. Tanzania Mainland" />
                         </div>
-                      ))}
+                        <div className="form-group">
+                          <label className="form-label">Working Region</label>
+                          <input type="text" className="form-input" value={personalInfo.workingRegion} onChange={e => setPersonalInfo(prev => ({ ...prev, workingRegion: e.target.value }))} placeholder="e.g. Dar es Salaam" />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Working Station</label>
+                          <input type="text" className="form-input" value={personalInfo.workingStation} onChange={e => setPersonalInfo(prev => ({ ...prev, workingStation: e.target.value }))} placeholder="e.g. Dar es Salaam HQ" />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Department</label>
+                          <input type="text" className="form-input" value={personalInfo.department} onChange={e => setPersonalInfo(prev => ({ ...prev, department: e.target.value }))} placeholder="e.g. Human Resources" />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Mobile Number</label>
+                          <input type="text" className="form-input" value={personalInfo.mobileNumber} onChange={e => setPersonalInfo(prev => ({ ...prev, mobileNumber: e.target.value }))} placeholder="e.g. +255712345678" />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Email Address</label>
+                          <input type="email" className="form-input" value={personalInfo.emailAddress} onChange={e => setPersonalInfo(prev => ({ ...prev, emailAddress: e.target.value }))} placeholder="e.g. john.doe@immigration.go.tz" />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Blood Group</label>
+                          <select className="form-input form-select" value={personalInfo.bloodGroup} onChange={e => setPersonalInfo(prev => ({ ...prev, bloodGroup: e.target.value }))}>
+                            <option value="">Select blood group</option>
+                            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Upload Current Photo</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Upload a passport-size photo. Allowed: JPEG, PNG (max 5MB).</p>
+                      <input type="file" ref={photoInputRef} className="file-upload-input" accept=".jpg,.jpeg,.png" onChange={handlePhotoUpload} />
+                      <div className="staffid-photo-upload">
+                        {personalInfo.photo ? (
+                          <div className="staffid-photo-preview">
+                            <img src={personalInfo.photo} alt="Employee" />
+                            <div className="staffid-photo-actions">
+                              <button className="btn btn-sm btn-secondary" onClick={() => photoInputRef.current?.click()}>Replace</button>
+                              <button className="btn btn-sm btn-secondary" onClick={() => setPersonalInfo(prev => ({ ...prev, photo: null }))}>Remove</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="staffid-photo-placeholder" onClick={() => photoInputRef.current?.click()}>
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <span>Click to upload photo</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -284,22 +433,105 @@ function StaffIdPage() {
                 {step === 3 && (
                   <>
                     <div className="leave-form-section">
-                      <h4 className="leave-form-section-title">Staff ID Preview</h4>
-                      <div className="id-card-preview-wrap">{renderIdCard()}</div>
+                      <h4 className="leave-form-section-title">Request New ID</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Select the type of ID request and provide any additional comments.</p>
+                      <div className="leave-form-row">
+                        <div className="form-group">
+                          <label className="form-label">Type of ID Request</label>
+                          <select className="form-input form-select" value={requestDetails.idType} onChange={e => setRequestDetails(prev => ({ ...prev, idType: e.target.value }))}>
+                            <option>New Staff ID</option>
+                            <option>Replacement ID</option>
+                            <option>Lost ID</option>
+                            <option>Damaged ID</option>
+                            <option>Other</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="leave-form-row leave-form-row--full">
+                        <div className="form-group">
+                          <label className="form-label">Comments / Reasons</label>
+                          <textarea className="form-input form-textarea" rows={4} value={requestDetails.comments} onChange={e => setRequestDetails(prev => ({ ...prev, comments: e.target.value }))} placeholder="Provide additional explanation for your ID request..." />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Upload Supporting Document</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Upload a supporting document. Accepted format: PDF only (max 10MB).</p>
+                      <input type="file" ref={docInputRef} className="file-upload-input" accept=".pdf,application/pdf" onChange={handleDocUpload} />
+                      <div className="attachment-row">
+                        <div className="attachment-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                        <div className="attachment-info">
+                          <p className="attachment-name">{requestDetails.supportingDoc ? requestDetails.supportingDoc.name : 'No file selected'}</p>
+                          <p className="attachment-hint">{requestDetails.supportingDoc ? `${(requestDetails.supportingDoc.size / 1024).toFixed(1)} KB` : 'Click upload to select a PDF file'}</p>
+                        </div>
+                        <div className="attachment-status"><span className="attachment-badge required">Required</span></div>
+                        <div className="attachment-actions">
+                          <button className="btn btn-sm btn-primary" onClick={() => docInputRef.current?.click()}>{requestDetails.supportingDoc ? 'Replace' : 'Upload'}</button>
+                          {requestDetails.supportingDoc && <button className="btn btn-sm btn-secondary" onClick={() => setRequestDetails(prev => ({ ...prev, supportingDoc: null }))}>Remove</button>}
+                        </div>
+                      </div>
                     </div>
                   </>
                 )}
 
                 {step === 4 && (
                   <>
+                    {/* Employee Verification Summary */}
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Employee Verification</h4>
+                      <div className="leave-detail-grid leave-detail-grid--3col">
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Name</span><span className="leave-detail-value">{verifiedEmployee?.fullName}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Number</span><span className="leave-detail-value">{verifiedEmployee?.employeeNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Check Number</span><span className="leave-detail-value">{verifiedEmployee?.checkNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">National ID (NIN)</span><span className="leave-detail-value">{verifiedEmployee?.nin}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Designation</span><span className="leave-detail-value">{verifiedEmployee?.designation}</span></div>
+                      </div>
+                    </div>
+
+                    {/* Personal Information Summary */}
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Personal Information</h4>
+                      <div className="leave-detail-grid leave-detail-grid--3col">
+                        <div className="leave-detail-item"><span className="leave-detail-label">Territory</span><span className="leave-detail-value">{personalInfo.territory}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Working Region</span><span className="leave-detail-value">{personalInfo.workingRegion}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Working Station</span><span className="leave-detail-value">{personalInfo.workingStation}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Department</span><span className="leave-detail-value">{personalInfo.department}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Mobile Number</span><span className="leave-detail-value">{personalInfo.mobileNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Email Address</span><span className="leave-detail-value">{personalInfo.emailAddress}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Blood Group</span><span className="leave-detail-value">{personalInfo.bloodGroup}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Photo Uploaded</span><span className="leave-detail-value">{personalInfo.photo ? 'Yes' : 'No'}</span></div>
+                      </div>
+                    </div>
+
+                    {/* Request New ID Summary */}
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Request New ID</h4>
+                      <div className="leave-detail-grid leave-detail-grid--3col">
+                        <div className="leave-detail-item"><span className="leave-detail-label">Type of ID Request</span><span className="leave-detail-value">{requestDetails.idType}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Supporting Document</span><span className="leave-detail-value">{requestDetails.supportingDoc ? requestDetails.supportingDoc.name : 'None'}</span></div>
+                      </div>
+                      {requestDetails.comments && (
+                        <div style={{ marginTop: 12 }}>
+                          <span className="leave-detail-label" style={{ display: 'block', marginBottom: 4 }}>Comments / Reasons</span>
+                          <p style={{ fontSize: 14, color: 'var(--color-text)', background: 'var(--color-bg)', padding: '12px 16px', borderRadius: 'var(--radius-md)' }}>{requestDetails.comments}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Declaration */}
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Declaration</h4>
                       <div className="staffid-declaration">
-                        <p className="staffid-declaration-text">I, <strong>{ID_CARD.name}</strong>, hereby declare that all the information provided in this Staff ID application is true, accurate, and complete to the best of my knowledge. I understand that any false or misleading information may result in the rejection of this application and may subject me to disciplinary action in accordance with the organization's policies and regulations.</p>
+                        <p className="staffid-declaration-text">I, <strong>{verifiedEmployee?.fullName || 'the employee'}</strong>, hereby declare that all the information provided in this Staff ID request is true, accurate, and complete to the best of my knowledge. I understand that any false or misleading information may result in the rejection of this request and may subject me to disciplinary action in accordance with the organization's policies and regulations.</p>
                         <div className="staffid-declaration-check">
-                          <input type="checkbox" id="declare" checked={declared} onChange={e => setDeclared(e.target.checked)} />
-                          <label htmlFor="declare">I accept the declaration and confirm the information is accurate.</label>
+                          <input type="checkbox" id="declare" checked={declared} onChange={e => handleDeclaration(e.target.checked)} />
+                          <label htmlFor="declare">I confirm that the information provided in this Staff ID request is correct and belongs to me.</label>
                         </div>
+                        {declarationTimestamp && (
+                          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 12 }}>
+                            Declaration accepted on {new Date(declarationTimestamp).toLocaleString()}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </>
@@ -310,23 +542,24 @@ function StaffIdPage() {
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Application Summary</h4>
                       <div className="leave-detail-grid" style={{ marginBottom: 24 }}>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Applicant</span><span className="leave-detail-value">{ID_CARD.name}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Employee No</span><span className="leave-detail-value">{ID_CARD.employeeNo}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Department</span><span className="leave-detail-value">{ID_CARD.department}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Designation</span><span className="leave-detail-value">{ID_CARD.designation}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Reason</span><span className="leave-detail-value">{appReason}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Documents</span><span className="leave-detail-value">{Object.keys(uploadedFiles).length} uploaded</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Name</span><span className="leave-detail-value">{verifiedEmployee?.fullName}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Number</span><span className="leave-detail-value">{verifiedEmployee?.employeeNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Department</span><span className="leave-detail-value">{personalInfo.department}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Working Station</span><span className="leave-detail-value">{personalInfo.workingStation}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Mobile Number</span><span className="leave-detail-value">{personalInfo.mobileNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Email Address</span><span className="leave-detail-value">{personalInfo.emailAddress}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Blood Group</span><span className="leave-detail-value">{personalInfo.bloodGroup}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">ID Request Type</span><span className="leave-detail-value">{requestDetails.idType}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Photo Uploaded</span><span className="leave-detail-value">{personalInfo.photo ? 'Yes' : 'No'}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Supporting Document</span><span className="leave-detail-value">{requestDetails.supportingDoc ? requestDetails.supportingDoc.name : 'None'}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Declaration</span><span className="leave-detail-value">{declared ? 'Accepted' : 'Not Accepted'}</span></div>
                       </div>
-                      <h5 style={{ fontSize: 13, fontWeight: 700, margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: 0.8 }}>Uploaded Attachments</h5>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {Object.entries(uploadedFiles).map(([name, file]) => (
-                          <div key={name} className="attachment-row" style={{ padding: '10px 16px' }}>
-                            <div className="attachment-icon" style={{ width: 32, height: 32 }}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
-                            <div className="attachment-info"><p className="attachment-name" style={{ fontSize: 13 }}>{name}</p><p className="attachment-hint">{file.name} &middot; {(file.size / 1024).toFixed(1)} KB</p></div>
-                          </div>
-                        ))}
-                        {Object.keys(uploadedFiles).length === 0 && <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>No documents uploaded</p>}
-                      </div>
+                      {requestDetails.comments && (
+                        <>
+                          <h5 style={{ fontSize: 13, fontWeight: 700, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.8 }}>Comments / Reasons</h5>
+                          <p style={{ fontSize: 14, color: 'var(--color-text)', background: 'var(--color-bg)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 16 }}>{requestDetails.comments}</p>
+                        </>
+                      )}
                     </div>
                   </>
                 )}
@@ -334,10 +567,12 @@ function StaffIdPage() {
             ) : (
               <div className="staffid-success">
                 <div className="staffid-success-icon"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
-                <h3 className="staffid-success-title">{editingApp ? 'Correction Submitted Successfully' : 'Application Submitted Successfully'}</h3>
-                <p className="staffid-success-desc">{editingApp ? 'Your corrected Staff ID application has been resubmitted to the Human Resource Office for re-evaluation.' : 'Your Staff ID application has been successfully submitted to the Human Resource Office for processing.'}</p>
+                <h3 className="staffid-success-title">{editingApp ? 'Correction Submitted Successfully' : 'Request Submitted Successfully'}</h3>
+                <p className="staffid-success-desc">{editingApp ? 'Your corrected Staff ID application has been resubmitted to the Human Resource Office for re-evaluation.' : 'Your Staff ID request has been submitted successfully and is awaiting processing.'}</p>
                 <div className="staffid-success-details">
-                  <div className="staffid-success-row"><span className="staffid-success-label">Application Number</span><span className="staffid-success-value">{editingApp ? editingApp.id : 'SID-2026-005'}</span></div>
+                  <div className="staffid-success-row"><span className="staffid-success-label">Request Reference</span><span className="staffid-success-value">{requestRef || (editingApp ? editingApp.id : 'SID-2026-005')}</span></div>
+                  <div className="staffid-success-row"><span className="staffid-success-label">Employee Name</span><span className="staffid-success-value">{verifiedEmployee?.fullName}</span></div>
+                  <div className="staffid-success-row"><span className="staffid-success-label">Request Type</span><span className="staffid-success-value">{requestDetails.idType}</span></div>
                   <div className="staffid-success-row"><span className="staffid-success-label">Submission Date</span><span className="staffid-success-value">{new Date().toISOString().split('T')[0]}</span></div>
                   <div className="staffid-success-row"><span className="staffid-success-label">Current Status</span><span className="staffid-success-value"><span className="status-pill" style={editingApp ? STATUS_STYLE.Resubmitted : STATUS_STYLE.Submitted}>{editingApp ? 'Resubmitted' : 'Submitted'}</span></span></div>
                 </div>

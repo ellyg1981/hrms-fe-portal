@@ -64,43 +64,39 @@ function DependantsTab({ dependants, setDependants }) {
                 <option value="">Select</option>{GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </FG>
+            <FG label="Date of Birth"><input type="date" className="form-input" value={item.dateOfBirth} onChange={e => update(dependants, setDependants, item.id, 'dateOfBirth', e.target.value)} /></FG>
           </div>
           <div className="leave-form-row">
-            <FG label="Date of Birth"><input type="date" className="form-input" value={item.dateOfBirth} onChange={e => update(dependants, setDependants, item.id, 'dateOfBirth', e.target.value)} /></FG>
             <FG label="Occupation"><input className="form-input" value={item.occupation} onChange={e => update(dependants, setDependants, item.id, 'occupation', e.target.value)} placeholder="Enter occupation" /></FG>
             <FG label="School (if applicable)"><input className="form-input" value={item.school} onChange={e => update(dependants, setDependants, item.id, 'school', e.target.value)} placeholder="Enter school name" /></FG>
-          </div>
-          <div className="leave-form-row" style={{ marginTop: 'var(--space-4)', justifyContent: 'flex-end' }}>
-            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-              {dependants.length > 1 && <button type="button" className="reg-btn-remove" onClick={() => remove(dependants, setDependants, item.id)}>Remove Dependant</button>}
-            </div>
-          </div>
-          <div className="leave-form-row leave-form-row--full" style={{ marginTop: 'var(--space-4)' }}>
-            <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
-              <h5 className="leave-form-section-title">Supporting Documents</h5>
-              <p className="leave-form-hint">Upload birth certificate, marriage certificate, or other supporting documents. Allowed: PDF, JPG, PNG (max 10MB each).</p>
+            <div className="form-group">
+              <label className="form-label">Attachments</label>
               <button type="button" className="btn btn-secondary" onClick={() => { setPendingDepId(item.id); fileRef.current?.click(); }}>Add Attachment</button>
-              {(item.attachments || []).length > 0 && (
-                <div className="reg-attachments-list">
-                  {(item.attachments || []).map(att => (
-                    <div key={att.id} className="reg-attachment-item">
-                      <div className="reg-attachment-icon">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                      </div>
-                      <div className="reg-attachment-info">
-                        <span className="reg-attachment-name">{att.name}</span>
-                        <span className="reg-attachment-size">{formatSize(att.size)}</span>
-                      </div>
-                      <div className="reg-attachment-actions">
-                        <button type="button" className="reg-attachment-btn" onClick={() => viewAtt(att)}>View</button>
-                        <button type="button" className="reg-attachment-btn reg-attachment-btn--danger" onClick={() => removeAtt(item.id, att.id)}>Remove</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+            </div>
+            <div className="form-group">
+              <label className="form-label">&nbsp;</label>
+              {dependants.length > 1 && <button type="button" className="reg-btn-remove" style={{ width: '100%', height: '48px' }} onClick={() => remove(dependants, setDependants, item.id)}>Remove Dependant</button>}
             </div>
           </div>
+          {(item.attachments || []).length > 0 && (
+            <div className="reg-attachments-list" style={{ marginTop: 'var(--space-3)' }}>
+              {(item.attachments || []).map(att => (
+                <div key={att.id} className="reg-attachment-item">
+                  <div className="reg-attachment-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div className="reg-attachment-info">
+                    <span className="reg-attachment-name">{att.name}</span>
+                    <span className="reg-attachment-size">{formatSize(att.size)}</span>
+                  </div>
+                  <div className="reg-attachment-actions">
+                    <button type="button" className="reg-attachment-btn" onClick={() => viewAtt(att)}>View</button>
+                    <button type="button" className="reg-attachment-btn reg-attachment-btn--danger" onClick={() => removeAtt(item.id, att.id)}>Remove</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ))}
       <button type="button" className="reg-btn-add" onClick={() => add(setDependants, () => ({ id: makeId(), fullName: '', relationship: '', gender: '', dateOfBirth: '', occupation: '', school: '', attachments: [] }))}>+ Add Dependant</button>

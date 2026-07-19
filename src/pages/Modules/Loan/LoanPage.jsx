@@ -3,6 +3,7 @@ import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitl
 import Card from '../../../components/common/Card/Card';
 import DataTable from '../../../components/common/DataTable/DataTable';
 import Modal from '../../../components/common/Modal/Modal';
+import { notificationService } from '../../../components/Notifications/notificationService';
 import './LoanPage.css';
 
 const LOAN_HISTORY = [
@@ -32,9 +33,9 @@ const STATUS_STYLE = {
 };
 
 const TAB_ICONS = {
-  overview: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>,
-  history: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  repayment: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+  overview: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>,
+  history: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  repayment: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
 };
 
 const TABS = [
@@ -69,11 +70,11 @@ function LoanPage() {
           onCta={() => setShowApplyModal(true)}
         />
 
-        <div className="tabs leave-tabs">
+        <div className="reg-tabs">
           {TABS.map(tab => (
             <button
               key={tab.key}
-              className={`tab ${activeTab === tab.key ? 'active' : ''}`}
+              className={`reg-tab ${activeTab === tab.key ? 'active' : ''}`}
               onClick={() => setActiveTab(tab.key)}
             >
               {TAB_ICONS[tab.key]}
@@ -175,13 +176,13 @@ function LoanPage() {
               ]}
               loading={isLoading}
               refreshAction={() => { setIsLoading(true); setTimeout(() => setIsLoading(false), 600); }}
-              exportAction={() => alert('Exporting loan history...')}
+              exportAction={() => notificationService.info('Exporting loan history...')}
               actionColumn={row => (
                 <div className="dt-actions">
                   <button className="action-btn action-btn--view" onClick={() => setSelectedLoan(row)} title="View Details">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </button>
-                  <button className="action-btn action-btn--download" onClick={() => alert('Downloading ' + row.id)} title="Download Statement">
+                  <button className="action-btn action-btn--download" onClick={() => notificationService.info('Downloading ' + row.id)} title="Download Statement">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </button>
                 </div>
@@ -244,7 +245,7 @@ function LoanPage() {
               ]}
               loading={isLoading}
               refreshAction={() => { setIsLoading(true); setTimeout(() => setIsLoading(false), 600); }}
-              exportAction={() => alert('Exporting repayment schedule...')}
+              exportAction={() => notificationService.info('Exporting repayment schedule...')}
               emptyState={{ title: 'No repayment records found', description: 'No records match your search or filter criteria.' }}
             />
           </>
@@ -260,7 +261,7 @@ function LoanPage() {
             footer={
               <div className="leave-form-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowApplyModal(false)}>Cancel</button>
-                <button type="button" className="btn btn-primary" onClick={() => alert('Loan application submitted')}>Submit Application</button>
+                <button type="button" className="btn btn-primary" onClick={() => notificationService.promise(new Promise(resolve => setTimeout(() => { setShowApplyModal(false); resolve(); }, 1000)), { loading: 'Submitting loan application...', success: 'Loan application submitted successfully.', error: 'Failed to submit loan application.' })}>Submit Application</button>
               </div>
             }
           >

@@ -52,9 +52,9 @@ function ContactTab({ contact, setContact, physAddr, setPhysAddr, workLoc, setWo
           <FG label="Ward">
             <WardSelect value={physAddr.ward} district={physAddr.district} onChange={val => setPhysAddr(p => ({ ...p, ward: val }))} placeholder="Select Ward" />
           </FG>
+          <FG label="Village / Street"><input className="form-input" value={physAddr.village} onChange={e => setPhysAddr(p => ({ ...p, village: e.target.value }))} placeholder="e.g. Uhuru Street" /></FG>
         </div>
         <div className="leave-form-row">
-          <FG label="Village / Street"><input className="form-input" value={physAddr.village} onChange={e => setPhysAddr(p => ({ ...p, village: e.target.value }))} placeholder="e.g. Uhuru Street" /></FG>
           <FG label="Street / Road"><input className="form-input" value={physAddr.street} onChange={e => setPhysAddr(p => ({ ...p, street: e.target.value }))} placeholder="Enter street name" /></FG>
           <FG label="House Number"><input className="form-input" value={physAddr.house} onChange={e => setPhysAddr(p => ({ ...p, house: e.target.value }))} placeholder="e.g. Plot 123" /></FG>
         </div>
@@ -66,8 +66,6 @@ function ContactTab({ contact, setContact, physAddr, setPhysAddr, workLoc, setWo
           <FG label="Region"><RegionSelect value={workLoc.region} onChange={val => setWorkLoc({ ...INIT_LOC, region: val, office: workLoc.office, department: workLoc.department })} placeholder="Select Region" /></FG>
           <FG label="District"><DistrictSelect value={workLoc.district} region={workLoc.region} onChange={val => setWorkLoc(p => ({ ...p, district: val, ward: '' }))} placeholder="Select District" /></FG>
           <FG label="Ward"><WardSelect value={workLoc.ward} district={workLoc.district} onChange={val => setWorkLoc(p => ({ ...p, ward: val }))} placeholder="Select Ward" /></FG>
-        </div>
-        <div className="leave-form-row">
           <FG label="Office / Building"><input className="form-input" value={workLoc.office} onChange={e => setWorkLoc(p => ({ ...p, office: e.target.value }))} placeholder="Enter office" /></FG>
         </div>
       </div>
@@ -78,9 +76,9 @@ function ContactTab({ contact, setContact, physAddr, setPhysAddr, workLoc, setWo
           <FG label="Region"><RegionSelect value={domicile.region} onChange={val => setDomicile({ ...INIT_LOC, region: val, village: domicile.village, street: domicile.street, house: domicile.house })} placeholder="Select Region" /></FG>
           <FG label="District"><DistrictSelect value={domicile.district} region={domicile.region} onChange={val => setDomicile(p => ({ ...p, district: val, ward: '' }))} placeholder="Select District" /></FG>
           <FG label="Ward"><WardSelect value={domicile.ward} district={domicile.district} onChange={val => setDomicile(p => ({ ...p, ward: val }))} placeholder="Select Ward" /></FG>
+          <FG label="Village / Street"><input className="form-input" value={domicile.village} onChange={e => setDomicile(p => ({ ...p, village: e.target.value }))} placeholder="e.g. Uhuru Street" /></FG>
         </div>
         <div className="leave-form-row">
-          <FG label="Village / Street"><input className="form-input" value={domicile.village} onChange={e => setDomicile(p => ({ ...p, village: e.target.value }))} placeholder="e.g. Uhuru Street" /></FG>
           <FG label="Street / Road"><input className="form-input" value={domicile.street} onChange={e => setDomicile(p => ({ ...p, street: e.target.value }))} placeholder="Enter street name" /></FG>
           <FG label="House Number"><input className="form-input" value={domicile.house} onChange={e => setDomicile(p => ({ ...p, house: e.target.value }))} placeholder="e.g. Plot 123" /></FG>
         </div>
@@ -88,13 +86,15 @@ function ContactTab({ contact, setContact, physAddr, setPhysAddr, workLoc, setWo
 
       <div className="leave-form-section">
         <h4 className="leave-form-section-title">Supporting Documents</h4>
-        <div className="leave-form-row leave-form-row--full">
-          <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
-            <p className="leave-form-hint">Upload employee photo, academic certificates, professional certificates, and other supporting documents. Allowed: PDF, JPG, PNG (max 10MB each).</p>
-            <input type="file" ref={fileRef} className="file-upload-input" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={handleAttachments} />
+        <input type="file" ref={fileRef} className="file-upload-input" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={handleAttachments} />
+        <div className="leave-form-row">
+          <div className="form-group">
+            <label className="form-label">Attachments</label>
             <button type="button" className="btn btn-secondary" onClick={() => fileRef.current?.click()}>Add Attachment</button>
+          </div>
+        </div>
         {attachments.length > 0 && (
-          <div className="reg-attachments-list">
+          <div className="reg-attachments-list" style={{ marginTop: 'var(--space-3)' }}>
             {attachments.map(att => (
               <div key={att.id} className="reg-attachment-item">
                 <div className="reg-attachment-icon">
@@ -112,8 +112,6 @@ function ContactTab({ contact, setContact, physAddr, setPhysAddr, workLoc, setWo
             ))}
           </div>
         )}
-          </div>
-        </div>
       </div>
     </>
   );

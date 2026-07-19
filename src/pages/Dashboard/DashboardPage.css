@@ -308,6 +308,93 @@
   gap: var(--space-5);
 }
 
+/* ── Notifications Summary Modal ── */
+.notif-summary-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.notif-summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.notif-summary-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-border-light);
+}
+
+.notif-summary-section-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-summary-section-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.notif-summary-section-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-sky-blue);
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.notif-summary-section-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.notif-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-3) var(--space-3);
+  border: none;
+  border-left: 3px solid transparent;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.notif-summary-item:hover {
+  background: var(--color-bg);
+  border-left-color: var(--color-primary);
+}
+
+.notif-summary-item-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.notif-summary-item-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
 .service-card {
   display: flex;
   flex-direction: column;

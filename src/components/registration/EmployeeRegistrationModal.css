@@ -260,9 +260,18 @@
   color: var(--color-white);
 }
 
-/* 3-column grid for registration modal (was 4 in global) */
+/* 4-column grid for registration/profile forms */
 .reg-tab-content .leave-form-row {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Make upload buttons in education/dependants/contact tabs match form input size */
+.reg-tab-content .form-group .btn.btn-secondary {
+  width: 100%;
+  height: 48px;
+  white-space: normal;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .reg-tab-content .leave-form-row.leave-form-row--full {
@@ -304,5 +313,502 @@
   .reg-tab svg {
     width: 16px;
     height: 16px;
+  }
+}
+
+/* ── Disabled Tab ── */
+.reg-tab--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reg-tab--disabled:hover {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+/* ── History Loading ── */
+.reg-history-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.reg-history-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: reg-spin 0.8s linear infinite;
+}
+
+@keyframes reg-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── History Empty State ── */
+.reg-history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.reg-history-empty svg {
+  color: var(--color-border);
+  margin-bottom: var(--space-2);
+}
+
+.reg-history-empty h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.reg-history-empty p {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ── History Table ── */
+.reg-history-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.reg-history-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.reg-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.reg-history-table thead {
+  background: var(--color-bg);
+}
+
+.reg-history-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.reg-history-table td {
+  padding: 10px 14px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-light);
+  white-space: nowrap;
+}
+
+.reg-history-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.reg-history-table tbody tr:nth-child(even) {
+  background: var(--color-bg);
+}
+
+.reg-history-table-center {
+  text-align: center;
+}
+
+/* ── History Status Badge ── */
+.reg-history-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── History Detail Cards ── */
+.reg-history-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.reg-history-detail-card {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  padding: var(--space-4);
+}
+
+.reg-history-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.reg-history-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reg-history-detail-item--full {
+  grid-column: 1 / -1;
+}
+
+.reg-history-detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.reg-history-detail-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* ── History Modal Forms ── */
+.modal-content.reg-history-modal {
+  max-width: 1080px;
+}
+
+.reg-history-modal .leave-form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.reg-history-modal .leave-form-row .form-group {
+  margin-bottom: 0;
+}
+
+.reg-history-modal .leave-form-row .form-group.reg-history-detail-item--full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1024px) {
+  .reg-history-modal .leave-form-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .modal-content.reg-history-modal {
+    max-width: 100%;
+  }
+  .reg-history-modal .leave-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── History Pagination ── */
+.reg-history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.reg-history-pagination-left {
+  display: flex;
+  align-items: center;
+}
+
+.reg-history-pagination-info {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.reg-history-pagination-info b {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.reg-history-pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.reg-history-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.reg-history-page-btn:hover:not(:disabled) {
+  background: var(--color-bg);
+  border-color: var(--color-primary-light);
+}
+
+.reg-history-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.reg-history-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.reg-history-page-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  min-width: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.reg-history-page-num:hover:not(.active) {
+  background: var(--color-bg);
+  border-color: var(--color-primary-light);
+}
+
+.reg-history-page-num.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+/* ── History Responsive ── */
+@media (max-width: 1024px) {
+  .reg-history-detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .reg-history-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .reg-history-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .reg-history-pagination-left {
+    justify-content: center;
+  }
+  .reg-history-pagination-right {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* ── History Section Header ── */
+.reg-history-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.reg-history-section-header .leave-form-section-title {
+  margin: 0;
+}
+
+/* ── History Action Column ── */
+.reg-history-action-col {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.reg-history-action-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.reg-history-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.reg-history-action-btn:hover {
+  background: var(--color-sky-blue);
+  color: var(--color-primary);
+  border-color: var(--color-primary-light);
+}
+
+.reg-history-action-btn--danger:hover {
+  background: #FEF2F2;
+  color: #DC2626;
+  border-color: #DC2626;
+}
+
+/* ── Declaration Summary ── */
+.reg-declaration-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.reg-decl-summary-section {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-bg);
+}
+
+.reg-decl-summary-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-3) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.reg-decl-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.reg-decl-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reg-decl-summary-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.reg-decl-summary-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.reg-decl-divider {
+  height: 1px;
+  background: var(--color-border-light);
+  margin: var(--space-2) 0;
+}
+
+.reg-decl-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+  .reg-decl-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .reg-decl-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .reg-decl-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .reg-decl-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ── Detail Modal Sections ── */
+.reg-detail-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.reg-detail-modal-section {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-bg);
+}
+
+.reg-detail-modal-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-3) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.reg-detail-modal-section .reg-history-detail-grid {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .reg-detail-modal-section {
+    padding: var(--space-3);
+  }
+  .reg-detail-modal-section-title {
+    font-size: 13px;
   }
 }

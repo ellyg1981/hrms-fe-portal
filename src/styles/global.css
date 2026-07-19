@@ -208,6 +208,77 @@ input[type="file"] { padding: 10px var(--space-4); line-height: 1; }
 .tab:hover { color: var(--color-primary); }
 .tab.active { color: var(--color-primary); border-bottom-color: var(--color-gold); }
 
+/* ── Pill-style Tabs (My Profile style) ── */
+.reg-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.reg-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.reg-tab:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text);
+}
+
+.reg-tab.active {
+  background: var(--color-white);
+  color: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.reg-tab svg {
+  flex-shrink: 0;
+}
+
+.reg-tab--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reg-tab--disabled:hover {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .reg-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 640px) {
+  .reg-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .reg-tab svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 /* ── Toast notifications ── */
 .toast-container {
   position: fixed; top: 24px; right: 24px; z-index: 2000;

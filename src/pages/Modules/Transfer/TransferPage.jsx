@@ -5,6 +5,7 @@ import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
 import LocationGroup from '../../../components/common/location/LocationGroup';
 import html2pdf from 'html2pdf.js';
+import { notificationService } from '../../../components/Notifications/notificationService';
 import './TransferPage.css';
 
 const TRANSFER_HISTORY = [
@@ -29,9 +30,9 @@ const STATUS_STYLE = {
 };
 
 const TAB_ICONS = {
-  overview: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>,
-  history: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  confirmation: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+  overview: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>,
+  history: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  confirmation: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
 };
 
 const TABS = [
@@ -286,11 +287,11 @@ function TransferPage() {
           onCta={() => setShowRequestModal(true)}
         />
 
-        <div className="tabs leave-tabs">
+        <div className="reg-tabs">
           {TABS.map(tab => (
             <button
               key={tab.key}
-              className={`tab ${activeTab === tab.key ? 'active' : ''}`}
+              className={`reg-tab ${activeTab === tab.key ? 'active' : ''}`}
               onClick={() => setActiveTab(tab.key)}
             >
               {TAB_ICONS[tab.key]}
@@ -345,7 +346,7 @@ function TransferPage() {
             footer={
               <div className="leave-form-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowRequestModal(false)}>Cancel</button>
-                <button type="button" className="btn btn-primary" onClick={() => alert('Transfer request submitted')}>Submit Request</button>
+                <button type="button" className="btn btn-primary" onClick={() => notificationService.promise(new Promise(resolve => setTimeout(() => { setShowRequestModal(false); resolve(); }, 1000)), { loading: 'Submitting transfer request...', success: 'Transfer request submitted successfully.', error: 'Failed to submit transfer request.' })}>Submit Request</button>
               </div>
             }
           >
@@ -461,7 +462,7 @@ function TransferPage() {
               ]}
               loading={isLoading}
               refreshAction={() => { setIsLoading(true); setTimeout(() => setIsLoading(false), 600); }}
-              exportAction={() => alert('Exporting transfer history...')}
+              exportAction={() => notificationService.info('Exporting transfer history...')}
               actionColumn={row => (
                 <div className="dt-actions">
                   <button className="action-btn action-btn--view" onClick={() => setSelectedTransfer(row)} title="View Details">

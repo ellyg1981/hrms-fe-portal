@@ -6,6 +6,10 @@ import EducationTab from './EducationTab';
 import DependantsTab from './DependantsTab';
 import NextOfKinTab from './NextOfKinTab';
 import ContactTab from './ContactTab';
+import TransferHistoryTab from './TransferHistoryTab';
+import LeaveHistoryTab from './LeaveHistoryTab';
+import DeclarationTab from './DeclarationTab';
+import { notificationService } from '../Notifications/notificationService';
 import './EmployeeRegistrationModal.css';
 
 const TABS = [
@@ -15,6 +19,9 @@ const TABS = [
   { key: 'dependants', label: 'Dependants', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
   { key: 'nextofkin', label: 'Next of Kin', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
   { key: 'contact', label: 'Contact Information', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> },
+  { key: 'transferHistory', label: 'Transfer History', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 3h3v3h-3z"/><path d="M8 18h3v3H8z"/><path d="M21 6l-9 9"/><path d="M15 6h6v6"/><path d="M9 18H3v-6"/></svg> },
+  { key: 'leaveHistory', label: 'Leave History', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+  { key: 'declaration', label: 'Declaration', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
 ];
 
 const INIT_LOC = { region: '', district: '', ward: '', village: '', street: '', house: '' };
@@ -28,6 +35,8 @@ const blankKin = () => ({ id: makeId(), fullName: '', relationship: '', dateOfBi
 
 function EmployeeRegistrationModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('search');
+  const [employeeVerified, setEmployeeVerified] = useState(false);
+  const [verifiedEmployeeId, setVerifiedEmployeeId] = useState('');
   const [personal, setPersonal] = useState(INIT_PERSONAL);
   const [photo, setPhoto] = useState(null);
   const [basicEdu, setBasicEdu] = useState([blankEdu()]);
@@ -42,6 +51,7 @@ function EmployeeRegistrationModal({ isOpen, onClose }) {
   const [attachments, setAttachments] = useState([]);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [declared, setDeclared] = useState(false);
   const photoRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -71,17 +81,19 @@ function EmployeeRegistrationModal({ isOpen, onClose }) {
       if (firstErrorTab) setActiveTab(firstErrorTab);
       return;
     }
+    if (!declared) {
+      setActiveTab('declaration');
+      return;
+    }
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      alert('Employee registration submitted successfully!');
-      resetForm();
-      onClose();
-    }, 1500);
+    notificationService.promise(
+      new Promise(resolve => setTimeout(() => { resetForm(); onClose(); resolve(); }, 1500)),
+      { loading: 'Submitting employee registration...', success: 'Employee registration submitted successfully.', error: 'Failed to submit employee registration.' }
+    ).finally(() => setSubmitting(false));
   };
 
   const handleSaveDraft = () => {
-    alert('Draft saved successfully!');
+    notificationService.success('Draft saved successfully.');
   };
 
   const resetForm = () => {
@@ -99,9 +111,14 @@ function EmployeeRegistrationModal({ isOpen, onClose }) {
     setAttachments([]);
     setErrors({});
     setActiveTab('search');
+    setEmployeeVerified(false);
+    setVerifiedEmployeeId('');
+    setDeclared(false);
   };
 
   const handlePopulate = (data) => {
+    setEmployeeVerified(true);
+    if (data.personal?.employeeId) setVerifiedEmployeeId(data.personal.employeeId);
     if (data.personal) setPersonal({ ...INIT_PERSONAL, ...data.personal });
     if (data.contact) setContact(data.contact);
     if (data.physAddr) setPhysAddr({ ...INIT_LOC, ...data.physAddr });
@@ -132,6 +149,9 @@ function EmployeeRegistrationModal({ isOpen, onClose }) {
       case 'dependants': return <DependantsTab dependants={dependants} setDependants={setDependants} />;
       case 'nextofkin': return <NextOfKinTab nextOfKin={nextOfKin} setNextOfKin={setNextOfKin} />;
       case 'contact': return <ContactTab contact={contact} setContact={setContact} physAddr={physAddr} setPhysAddr={setPhysAddr} workLoc={workLoc} setWorkLoc={setWorkLoc} domicile={domicile} setDomicile={setDomicile} attachments={attachments} setAttachments={setAttachments} fileRef={fileRef} errors={errors} />;
+      case 'transferHistory': return <TransferHistoryTab employeeId={verifiedEmployeeId} />;
+      case 'leaveHistory': return <LeaveHistoryTab employeeId={verifiedEmployeeId} />;
+      case 'declaration': return <DeclarationTab personal={personal} contact={contact} physAddr={physAddr} workLoc={workLoc} basicEdu={basicEdu} higherEdu={higherEdu} profQuals={profQuals} dependants={dependants} nextOfKin={nextOfKin} attachments={attachments} declared={declared} setDeclared={setDeclared} onSubmit={handleSubmit} onSaveDraft={handleSaveDraft} submitting={submitting} />;
       default: return null;
     }
   };
@@ -154,17 +174,22 @@ function EmployeeRegistrationModal({ isOpen, onClose }) {
       }
     >
       <div className="reg-tabs">
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            className={`reg-tab ${activeTab === tab.key ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.key)}
-            type="button"
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+        {TABS.map(tab => {
+          const disabled = tab.requiresEmployee && !employeeVerified;
+          return (
+            <button
+              key={tab.key}
+              className={`reg-tab ${activeTab === tab.key ? 'active' : ''} ${disabled ? 'reg-tab--disabled' : ''}`}
+              onClick={() => !disabled && setActiveTab(tab.key)}
+              disabled={disabled}
+              type="button"
+              title={disabled ? 'Complete employee search first' : ''}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
       <div className="reg-tab-content">
         {renderTabContent()}

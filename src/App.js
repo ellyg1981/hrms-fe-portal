@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext';
+import { NotificationProvider } from './components/Notifications/NotificationProvider';
 import AppLayout from './components/layout/AppLayout/AppLayout';
 import LoginPage from './pages/Auth/LoginPage';
 import DashboardPage from './pages/Dashboard/DashboardPage';
@@ -14,6 +14,7 @@ import SalaryPage from './pages/Modules/Salary/SalaryPage';
 import StaffIdPage from './pages/Modules/StaffId/StaffIdPage';
 import TransferPage from './pages/Modules/Transfer/TransferPage';
 import LoanPage from './pages/Modules/Loan/LoanPage';
+import NotificationsPage from './pages/Modules/Notifications/NotificationsPage';
 import './styles/global.css';
 
 function PrivateRoute({ children }) {
@@ -22,19 +23,12 @@ function PrivateRoute({ children }) {
 }
 
 function DashboardRoute() {
-  const [showRegistration, setShowRegistration] = useState(false);
   return (
     <AppLayout
       title="Dashboard"
       subtitle="Overview of your HR activities"
-      headerRight={
-        <button className="btn btn-primary dashboard-new-reg-btn" onClick={() => setShowRegistration(true)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New Registration
-        </button>
-      }
     >
-      <DashboardPage showRegistration={showRegistration} onCloseRegistration={() => setShowRegistration(false)} />
+      <DashboardPage />
     </AppLayout>
   );
 }
@@ -54,6 +48,7 @@ function AppRoutes() {
       <Route path="/modules/staff-id" element={<PrivateRoute><AppLayout title="Staff ID" subtitle="Your official identification"><StaffIdPage /></AppLayout></PrivateRoute>} />
       <Route path="/modules/transfer" element={<PrivateRoute><AppLayout title="Transfer" subtitle="Transfer requests and history"><TransferPage /></AppLayout></PrivateRoute>} />
       <Route path="/modules/loan" element={<PrivateRoute><AppLayout title="Loan" subtitle="Loan applications and status"><LoanPage /></AppLayout></PrivateRoute>} />
+      <Route path="/modules/notifications" element={<PrivateRoute><AppLayout title="Notifications" subtitle="View your notifications and activities"><NotificationsPage /></AppLayout></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
@@ -62,11 +57,11 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
+      <NotificationProvider>
         <BrowserRouter>
           <AppRoutes />
         </BrowserRouter>
-      </ToastProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

@@ -1274,6 +1274,10 @@
   gap: var(--space-4);
 }
 
+.leave-detail-grid--3col {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .leave-detail-item {
   display: flex;
   flex-direction: column;

@@ -30,24 +30,23 @@ function NextOfKinTab({ nextOfKin, setNextOfKin }) {
               </select>
             </FG>
             <FG label="Date of Birth"><input type="date" className="form-input" value={item.dateOfBirth} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'dateOfBirth', e.target.value)} /></FG>
-          </div>
-          <div className="leave-form-row">
             <FG label="Gender">
               <select className="form-input form-select" value={item.gender} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'gender', e.target.value)}>
                 <option value="">Select</option>{GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </FG>
-            <FG label="Occupation"><input className="form-input" value={item.occupation} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'occupation', e.target.value)} placeholder="Enter occupation" /></FG>
-            <FG label="Phone Number"><input type="tel" className="form-input" value={item.phone} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'phone', e.target.value)} placeholder="+255 7XX XXX XXX" /></FG>
           </div>
           <div className="leave-form-row">
+            <FG label="Occupation"><input className="form-input" value={item.occupation} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'occupation', e.target.value)} placeholder="Enter occupation" /></FG>
+            <FG label="Phone Number"><input type="tel" className="form-input" value={item.phone} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'phone', e.target.value)} placeholder="+255 7XX XXX XXX" /></FG>
             <FG label="Email Address"><input type="email" className="form-input" value={item.email} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'email', e.target.value)} placeholder="email@example.com" /></FG>
             <FG label="Physical Address"><input className="form-input" value={item.physicalAddress} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'physicalAddress', e.target.value)} placeholder="Enter physical address" /></FG>
-            <FG label="Postal Address"><input className="form-input" value={item.postalAddress} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'postalAddress', e.target.value)} placeholder="P.O. Box XXX" /></FG>
           </div>
-          <div className="leave-form-row" style={{ justifyContent: 'flex-end' }}>
-            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-              {nextOfKin.length > 1 && <button type="button" className="reg-btn-remove" onClick={() => remove(nextOfKin, setNextOfKin, item.id)}>Remove Next of Kin</button>}
+          <div className="leave-form-row">
+            <FG label="Postal Address"><input className="form-input" value={item.postalAddress} onChange={e => update(nextOfKin, setNextOfKin, item.id, 'postalAddress', e.target.value)} placeholder="P.O. Box XXX" /></FG>
+            <div className="form-group">
+              <label className="form-label">&nbsp;</label>
+              {nextOfKin.length > 1 && <button type="button" className="reg-btn-remove" style={{ width: '100%', height: '48px' }} onClick={() => remove(nextOfKin, setNextOfKin, item.id)}>Remove Next of Kin</button>}
             </div>
           </div>
         </div>

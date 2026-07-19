@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import './Modal.css';
 
 function Modal({ isOpen, onClose, title, children, footer, size = 'md', className = '' }) {
@@ -29,7 +30,7 @@ function Modal({ isOpen, onClose, title, children, footer, size = 'md', classNam
 
   if (!isOpen) return null;
 
-  return (
+  return ReactDOM.createPortal(
     <div className="modal-overlay" ref={overlayRef} role="dialog" aria-modal="true">
       <div className={`modal-content modal-size-${size} ${className}`} ref={contentRef}>
         <div className="modal-header">
@@ -41,7 +42,8 @@ function Modal({ isOpen, onClose, title, children, footer, size = 'md', classNam
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

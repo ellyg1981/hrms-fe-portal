@@ -1,0 +1,321 @@
+/* ── Register Modal ── */
+
+.reg-modal {
+  max-width: 520px;
+}
+
+/* ── Progress Indicator ── */
+.reg-progress {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  padding: 0 var(--space-2);
+}
+
+.reg-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  position: relative;
+}
+
+.reg-progress-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-light);
+  background: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+.reg-progress-step.active .reg-progress-circle {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-sky-blue);
+}
+
+.reg-progress-step.done .reg-progress-circle {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.reg-progress-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.reg-progress-step.active .reg-progress-label {
+  color: var(--color-primary);
+}
+
+.reg-progress-step.done .reg-progress-label {
+  color: var(--color-text);
+}
+
+.reg-progress-bar {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--color-border-light);
+  z-index: 0;
+}
+
+.reg-progress-step.done .reg-progress-bar {
+  background: var(--color-primary);
+}
+
+/* ── OTP Email Display ── */
+.reg-otp-email {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-sky-blue);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+/* ── OTP Input Boxes ── */
+.reg-otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.reg-otp-box {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.reg-otp-box:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.reg-otp-box::-webkit-inner-spin-button,
+.reg-otp-box::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ── OTP Resend ── */
+.reg-otp-resend {
+  text-align: center;
+  margin-top: var(--space-3);
+}
+
+.reg-otp-countdown {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ── Employee Info Summary ── */
+.reg-employee-info {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.reg-info-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 var(--space-3);
+}
+
+.reg-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.reg-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.reg-info-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.reg-info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ── Password Strength ── */
+.reg-pw-strength {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.reg-pw-strength-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.reg-pw-strength-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.reg-pw-strength-label {
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Password Requirements ── */
+.reg-pw-requirements {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: -var(--space-2);
+}
+
+.reg-pw-req-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-2);
+}
+
+.reg-pw-req-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reg-pw-req-list li {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.reg-pw-req-list li.reg-pw-req-ok {
+  color: #059669;
+}
+
+.reg-pw-req-icon {
+  width: 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.reg-pw-req-list li.reg-pw-req-ok .reg-pw-req-icon {
+  color: #059669;
+}
+
+/* ── Success Screen ── */
+.reg-success-info {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  text-align: center;
+  width: 100%;
+}
+
+.reg-success-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-2);
+}
+
+.reg-success-username {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--space-2);
+}
+
+.reg-success-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .reg-progress-label {
+    font-size: 10px;
+  }
+
+  .reg-progress-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .reg-otp-box {
+    width: 40px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  .reg-otp-inputs {
+    gap: var(--space-2);
+  }
+
+  .reg-info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .reg-info-value {
+    text-align: left;
+  }
+}

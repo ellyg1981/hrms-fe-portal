@@ -3,6 +3,7 @@ import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitl
 import Card from '../../../components/common/Card/Card';
 import DataTable from '../../../components/common/DataTable/DataTable';
 import Modal from '../../../components/common/Modal/Modal';
+import { notificationService } from '../../../components/Notifications/notificationService';
 import './PerformancePage.css';
 
 const PERFORMANCE_DATA = {
@@ -175,13 +176,13 @@ function PerformancePage() {
               ]}
               loading={isLoading}
               refreshAction={() => { setIsLoading(true); setTimeout(() => setIsLoading(false), 600); }}
-              exportAction={() => alert('Exporting appraisal history...')}
+              exportAction={() => notificationService.info('Exporting appraisal history...')}
               actionColumn={row => (
                 <div className="dt-actions">
                   <button className="action-btn action-btn--view" onClick={() => setSelectedReview(row)} title="View Details">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </button>
-                  <button className="action-btn action-btn--download" onClick={() => alert('Downloading ' + row.id)} title="Download">
+                  <button className="action-btn action-btn--download" onClick={() => notificationService.info('Downloading ' + row.id)} title="Download">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </button>
                 </div>

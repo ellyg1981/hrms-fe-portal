@@ -98,17 +98,13 @@ function EducationTab({ basicEdu, setBasicEdu, higherEdu, setHigherEdu, profQual
               <FG label="Education Level"><input className="form-input" value={item.level} onChange={e => updateRow(basicEdu, setBasicEdu, item.id, 'level', e.target.value)} placeholder="e.g. Primary" /></FG>
               <FG label="Institution"><input className="form-input" value={item.institution} onChange={e => updateRow(basicEdu, setBasicEdu, item.id, 'institution', e.target.value)} placeholder="Enter institution" /></FG>
               <FG label="Year Completed"><input type="number" className="form-input" value={item.year} onChange={e => updateRow(basicEdu, setBasicEdu, item.id, 'year', e.target.value)} placeholder="e.g. 2010" /></FG>
-            </div>
-            <div className="leave-form-row leave-form-row--full" style={{ marginTop: 'var(--space-3)' }}>
-              <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
-                <p className="leave-form-hint" style={{ marginTop: '12px' }}>Upload academic certificate. Allowed: PDF, JPG, PNG (max 10MB each).</p>
+              <div className="form-group">
+                <label className="form-label">Attachments</label>
                 <button type="button" className="btn btn-secondary" onClick={() => triggerUpload('basic', item.id)}>Upload Certificate</button>
-                {renderAttachments('basic', item)}
-              </div>
-              <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                {basicEdu.length > 1 && <button type="button" className="reg-btn-remove" onClick={() => removeRow(basicEdu, setBasicEdu, item.id)}>Remove</button>}
+                {basicEdu.length > 1 && <button type="button" className="reg-btn-remove" style={{ marginTop: 'var(--space-2)' }} onClick={() => removeRow(basicEdu, setBasicEdu, item.id)}>Remove</button>}
               </div>
             </div>
+            {renderAttachments('basic', item)}
           </div>
         ))}
         <button type="button" className="reg-btn-add" style={{ marginTop: '8px' }} onClick={() => addRow(setBasicEdu, () => ({ id: makeId(), level: '', institution: '', year: '', attachments: [] }))}>+ Add Academic Record</button>
@@ -122,17 +118,13 @@ function EducationTab({ basicEdu, setBasicEdu, higherEdu, setHigherEdu, profQual
               <FG label="Degree / Diploma"><input className="form-input" value={item.degree} onChange={e => updateRow(higherEdu, setHigherEdu, item.id, 'degree', e.target.value)} placeholder="e.g. Bachelor" /></FG>
               <FG label="Institution"><input className="form-input" value={item.institution} onChange={e => updateRow(higherEdu, setHigherEdu, item.id, 'institution', e.target.value)} placeholder="Enter institution" /></FG>
               <FG label="Year Completed"><input type="number" className="form-input" value={item.year} onChange={e => updateRow(higherEdu, setHigherEdu, item.id, 'year', e.target.value)} placeholder="e.g. 2015" /></FG>
-            </div>
-            <div className="leave-form-row leave-form-row--full" style={{ marginTop: 'var(--space-3)' }}>
-              <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
-                <p className="leave-form-hint" style={{ marginTop: '12px' }}>Upload academic certificate. Allowed: PDF, JPG, PNG (max 10MB each).</p>
+              <div className="form-group">
+                <label className="form-label">Attachments</label>
                 <button type="button" className="btn btn-secondary" onClick={() => triggerUpload('higher', item.id)}>Upload Certificate</button>
-                {renderAttachments('higher', item)}
-              </div>
-              <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                {higherEdu.length > 1 && <button type="button" className="reg-btn-remove" onClick={() => removeRow(higherEdu, setHigherEdu, item.id)}>Remove</button>}
+                {higherEdu.length > 1 && <button type="button" className="reg-btn-remove" style={{ marginTop: 'var(--space-2)' }} onClick={() => removeRow(higherEdu, setHigherEdu, item.id)}>Remove</button>}
               </div>
             </div>
+            {renderAttachments('higher', item)}
           </div>
         ))}
         <button type="button" className="reg-btn-add" style={{ marginTop: '8px' }} onClick={() => addRow(setHigherEdu, () => ({ id: makeId(), degree: '', institution: '', year: '', attachments: [] }))}>+ Add Academic Content</button>
@@ -146,17 +138,13 @@ function EducationTab({ basicEdu, setBasicEdu, higherEdu, setHigherEdu, profQual
               <FG label="Qualification"><input className="form-input" value={item.qualification} onChange={e => updateRow(profQuals, setProfQuals, item.id, 'qualification', e.target.value)} placeholder="e.g. CPA" /></FG>
               <FG label="Institution"><input className="form-input" value={item.institution} onChange={e => updateRow(profQuals, setProfQuals, item.id, 'institution', e.target.value)} placeholder="Enter institution" /></FG>
               <FG label="Year Completed"><input type="number" className="form-input" value={item.year} onChange={e => updateRow(profQuals, setProfQuals, item.id, 'year', e.target.value)} placeholder="e.g. 2018" /></FG>
-            </div>
-            <div className="leave-form-row leave-form-row--full" style={{ marginTop: 'var(--space-3)' }}>
-              <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
-                <p className="leave-form-hint" style={{ marginTop: '12px' }}>Upload professional certificate. Allowed: PDF, JPG, PNG (max 10MB each).</p>
+              <div className="form-group">
+                <label className="form-label">Attachments</label>
                 <button type="button" className="btn btn-secondary" onClick={() => triggerUpload('prof', item.id)}>Upload Certificate</button>
-                {renderAttachments('prof', item)}
-              </div>
-              <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                {profQuals.length > 1 && <button type="button" className="reg-btn-remove" onClick={() => removeRow(profQuals, setProfQuals, item.id)}>Remove</button>}
+                {profQuals.length > 1 && <button type="button" className="reg-btn-remove" style={{ marginTop: 'var(--space-2)' }} onClick={() => removeRow(profQuals, setProfQuals, item.id)}>Remove</button>}
               </div>
             </div>
+            {renderAttachments('prof', item)}
           </div>
         ))}
         <button type="button" className="reg-btn-add" style={{ marginTop: '8px' }} onClick={() => addRow(setProfQuals, () => ({ id: makeId(), qualification: '', institution: '', year: '', attachments: [] }))}>+ Add Professional Qualification</button>
