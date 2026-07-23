@@ -7,6 +7,7 @@ import DistrictSelect from '../../../components/common/location/DistrictSelect';
 import WardSelect from '../../../components/common/location/WardSelect';
 import html2pdf from 'html2pdf.js';
 import { notificationService } from '../../../components/Notifications/notificationService';
+import { openDocument, openBrandedHtml } from '../../../utils/preview';
 import './TrainingPage.css';
 
 const PROGRAMS = [
@@ -432,12 +433,7 @@ function TrainingPage() {
 </div>
 </body>
 </html>`;
-    const win = window.open('', '_blank', 'width=900,height=1200,scrollbars=yes,resizable=yes');
-    if (win) {
-      win.document.open();
-      win.document.write(previewHTML);
-      win.document.close();
-    }
+    openBrandedHtml(previewHTML, att.name);
   };
 
   const EMPLOYEE_LIST = [
@@ -749,7 +745,7 @@ function TrainingPage() {
                               <p className="attachment-hint">{(item.file.size / 1024).toFixed(1)} KB</p>
                             </div>
                             <div className="attachment-actions">
-                              <button className="btn btn-sm btn-primary" onClick={() => window.open(item.previewUrl, '_blank')}>Preview</button>
+                              <button className="btn btn-sm btn-primary" onClick={() => openDocument(item.previewUrl, item.file.name)}>Preview</button>
                               <button className="btn btn-sm btn-secondary" onClick={() => { setReplaceIndex(idx); supportFileRef.current?.click(); }}>Replace</button>
                               <button className="btn btn-sm btn-secondary" onClick={() => removeSupportFile(idx)}>Remove</button>
                             </div>
@@ -834,7 +830,7 @@ function TrainingPage() {
                               <p className="attachment-hint">{(item.file.size / 1024).toFixed(1)} KB</p>
                             </div>
                             <div className="attachment-actions">
-                              <button className="btn btn-sm btn-primary" onClick={() => window.open(item.previewUrl, '_blank')}>Preview</button>
+                              <button className="btn btn-sm btn-primary" onClick={() => openDocument(item.previewUrl, item.file.name)}>Preview</button>
                               <button className="btn btn-sm btn-secondary" onClick={() => { setReplaceIndex(idx); supportFileRef.current?.click(); }}>Replace</button>
                               <button className="btn btn-sm btn-secondary" onClick={() => removeSupportFile(idx)}>Remove</button>
                             </div>

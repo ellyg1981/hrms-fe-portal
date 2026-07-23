@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { openDocument } from '../../utils/preview';
 
 const FG = ({ label, children, error, req }) => (
   <div className={`form-group${error ? ' form-group--error' : ''}`}>
@@ -20,7 +21,7 @@ const formatSize = (bytes) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
-const viewAtt = (att) => { const url = URL.createObjectURL(att.file); window.open(url, '_blank'); };
+const viewAtt = (att) => { openDocument(URL.createObjectURL(att.file), att.name); };
 
 function EducationTab({ basicEdu, setBasicEdu, higherEdu, setHigherEdu, profQuals, setProfQuals }) {
   const [target, setTarget] = useState(null);

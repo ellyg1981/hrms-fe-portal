@@ -3,9 +3,12 @@ import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitl
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
-import LocationGroup from '../../../components/common/location/LocationGroup';
+import RegionSelect from '../../../components/common/location/RegionSelect';
+import DistrictSelect from '../../../components/common/location/DistrictSelect';
+import WardSelect from '../../../components/common/location/WardSelect';
 import html2pdf from 'html2pdf.js';
 import { notificationService } from '../../../components/Notifications/notificationService';
+import { openBrandedHtml, openDocument } from '../../../utils/preview';
 import './TransferPage.css';
 
 const TRANSFER_HISTORY = [
@@ -269,9 +272,8 @@ function TransferPage() {
 
   const printTransferRecord = (row) => {
     const html = generateTransferRecordHTML(row);
-    const w = window.open('', '_blank', 'width=800,height=600');
-    w.document.write(html);
-    w.document.close();
+    const w = openBrandedHtml(html, `Transfer Record ${row.id}`);
+    if (!w) return;
     w.focus();
     setTimeout(() => { w.print(); }, 300);
   };
@@ -372,16 +374,21 @@ function TransferPage() {
               <div className="leave-form-section">
                 <h4 className="leave-form-section-title">Location Information</h4>
                 <div className="leave-form-row">
-                  <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <LocationGroup
-                      region={transferLocation.region}
-                      district={transferLocation.district}
-                      ward={transferLocation.ward}
-                      onChange={setTransferLocation}
-                      labels={{ region: 'New Region', district: 'New District', ward: 'Ward / Office Area' }}
-                    />
+                  <div className="form-group">
+                    <label className="form-label">New Region</label>
+                    <RegionSelect value={transferLocation.region} onChange={(r) => setTransferLocation({ region: r, district: '', ward: '' })} placeholder="Select Region" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">New District</label>
+                    <DistrictSelect value={transferLocation.district} onChange={(d) => setTransferLocation({ ...transferLocation, district: d, ward: '' })} region={transferLocation.region} placeholder="Select District" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Ward / Office Area</label>
+                    <WardSelect value={transferLocation.ward} onChange={(w) => setTransferLocation({ ...transferLocation, ward: w })} district={transferLocation.district} placeholder="Select Ward" />
                   </div>
                   <div className="form-group"><label className="form-label">Contact Address</label><input type="text" className="form-input" placeholder="Enter your contact address" /></div>
+                </div>
+                <div className="leave-form-row">
                   <div className="form-group"><label className="form-label">Contact Phone Number</label><input type="tel" className="form-input" placeholder="+255 7XX XXX XXX" /></div>
                 </div>
               </div>
@@ -423,7 +430,7 @@ function TransferPage() {
                               <p className="attachment-hint">{(file.size / 1024).toFixed(1)} KB</p>
                             </div>
                             <div className="attachment-actions">
-                              <button type="button" className="btn btn-sm btn-primary" onClick={() => { const url = URL.createObjectURL(file); window.open(url, '_blank'); }}>Preview</button>
+                              <button type="button" className="btn btn-sm btn-primary" onClick={() => { const url = URL.createObjectURL(file); openDocument(url, file.name); }}>Preview</button>
                               <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setReplaceIndex(idx); fileInputRef.current?.click(); }}>Replace</button>
                               <button type="button" className="btn btn-sm btn-secondary" onClick={() => setUploadedFiles(prev => prev.filter((_, i) => i !== idx))}>Remove</button>
                             </div>

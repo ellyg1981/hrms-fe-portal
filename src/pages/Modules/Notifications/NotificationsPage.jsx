@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
 import html2pdf from 'html2pdf.js';
+import { openDocument } from '../../../utils/preview';
 import './NotificationsPage.css';
 
 const CATEGORY_STYLES = {
@@ -270,7 +271,7 @@ function NotificationsPage() {
     html2pdf().set(opt).from(pageEl).outputPdf('blob').then((blob) => {
       document.body.removeChild(container);
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      openDocument(url, file.name);
       setTimeout(() => URL.revokeObjectURL(url), 30000);
     });
   };

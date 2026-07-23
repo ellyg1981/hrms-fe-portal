@@ -2,6 +2,7 @@ import React from 'react';
 import RegionSelect from '../common/location/RegionSelect';
 import DistrictSelect from '../common/location/DistrictSelect';
 import WardSelect from '../common/location/WardSelect';
+import { openDocument } from '../../utils/preview';
 
 const FG = ({ label, children, error, req }) => (
   <div className={`form-group${error ? ' form-group--error' : ''}`}>
@@ -20,7 +21,7 @@ function ContactTab({ contact, setContact, physAddr, setPhysAddr, workLoc, setWo
     setAttachments(prev => [...prev, ...newFiles]);
   };
 
-  const viewAtt = (a) => { const url = URL.createObjectURL(a.file); window.open(url, '_blank'); };
+  const viewAtt = (a) => { openDocument(URL.createObjectURL(a.file), a.name); };
   const removeAtt = (id) => setAttachments(prev => prev.filter(a => a.id !== id));
 
   const formatSize = (bytes) => {

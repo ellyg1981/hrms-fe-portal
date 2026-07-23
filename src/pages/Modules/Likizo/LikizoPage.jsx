@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
+import { openDocument } from '../../../utils/preview';
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
@@ -516,7 +517,7 @@ function LikizoPage() {
                           <p className="attachment-hint">{(item.file.size / 1024).toFixed(1)} KB</p>
                         </div>
                         <div className="attachment-actions">
-                          <button className="btn btn-sm btn-primary" onClick={() => window.open(item.previewUrl, '_blank')}>Preview</button>
+                          <button className="btn btn-sm btn-primary" onClick={() => openDocument(item.previewUrl, item.file.name)}>Preview</button>
                           <button className="btn btn-sm btn-secondary" onClick={() => { setReplaceIndex(idx); supportFileRef.current?.click(); }}>Replace</button>
                           <button className="btn btn-sm btn-secondary" onClick={() => removeSupportFile(idx)}>Remove</button>
                         </div>

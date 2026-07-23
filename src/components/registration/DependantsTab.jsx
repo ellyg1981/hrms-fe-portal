@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { openDocument } from '../../utils/preview';
 
 const GENDERS = ['Male','Female'];
 const RELS = ['Spouse','Child','Parent','Sibling','Relative','Other'];
@@ -32,7 +33,7 @@ function DependantsTab({ dependants, setDependants }) {
     e.target.value = '';
   };
 
-  const viewAtt = (att) => { const url = URL.createObjectURL(att.file); window.open(url, '_blank'); };
+  const viewAtt = (att) => { openDocument(URL.createObjectURL(att.file), att.name); };
   const removeAtt = (depId, attId) => {
     const dep = dependants.find(d => d.id === depId);
     if (dep) {

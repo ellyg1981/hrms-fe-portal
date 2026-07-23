@@ -24,6 +24,8 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(null); // 'reset' | 'register' | null
 
+  useEffect(() => { document.title = 'Login | HRMS Portal'; }, []);
+
   useEffect(() => { if (user) navigate('/dashboard', { replace: true }); }, [user, navigate]);
 
   useEffect(() => {

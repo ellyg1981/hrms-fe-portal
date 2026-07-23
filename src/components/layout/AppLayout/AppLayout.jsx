@@ -9,6 +9,10 @@ import './AppLayout.css';
 
 function AppLayout({ children, title, subtitle, headerRight }) {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = title ? `${title} | HRMS Portal` : 'HRMS Portal';
+  }, [title]);
   const location = useLocation();
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(true);

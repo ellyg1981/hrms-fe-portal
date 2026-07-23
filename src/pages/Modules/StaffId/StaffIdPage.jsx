@@ -1,23 +1,40 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
 import { notificationService } from '../../../components/Notifications/notificationService';
+import QRCode from 'qrcode';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+import { openBrandedHtml } from '../../../utils/preview';
+import coatOfArms from '../../../assets/images/coat_of_arms.png';
+import immigrationLogo from '../../../assets/images/uhamiaji_logo.png';
+import defaultUserPhoto from '../../../assets/images/photo.png';
 import './StaffIdPage.css';
 
 const ID_CARD = {
-  name: 'John Michael Doe', employeeNo: 'EMP-2024-00542', department: 'Human Resources',
-  directorate: 'Administration & HR', designation: 'Senior HR Officer',
-  workStation: 'Dar es Salaam HQ', officeLocation: '3rd Floor, Block A',
-  issued: '2025-01-15', expires: '2030-01-15', status: 'Active', photo: null,
+  name: 'GOODLUCK EDWIN MSUYA',
+  employeeNo: 'EMP-2026-00125',
+  staffIdNumber: '3917',
+  givenNames: 'GOODLUCK EDWIN',
+  surname: 'MSUYA',
+  sex: 'M',
+  rank: 'ASSISTANT SUPERINTENDENT',
+  bloodGroup: 'AB+',
+  department: 'Immigration Services',
+  workStation: 'Dar es Salaam HQ',
+  issued: '2025-01-15',
+  expires: '2030-01-15',
+  status: 'Active',
+  photo: null,
 };
 
 const APPLICATIONS = [
-  { id: 'SID-2026-001', type: 'New Staff ID', reason: 'New Staff ID', submittedDate: '2026-06-15', status: 'Issued', lastUpdated: '2026-06-20', hrResponse: 'Approved', remarks: 'ID card printed and issued', correctionStatus: 'No Action Required' },
-  { id: 'SID-2026-002', type: 'Replacement', reason: 'Lost ID', submittedDate: '2026-05-20', status: 'Ready for Collection', lastUpdated: '2026-06-28', hrResponse: 'Approved', remarks: 'Collect at HR Office, Block B', correctionStatus: 'No Action Required' },
-  { id: 'SID-2026-003', type: 'Renewal', reason: 'Renewal', submittedDate: '2026-06-01', status: 'Under Review', lastUpdated: '2026-06-05', hrResponse: 'Pending', remarks: 'Awaiting document verification', correctionStatus: 'No Action Required' },
-  { id: 'SID-2026-004', type: 'Replacement', reason: 'Damaged ID', submittedDate: '2026-04-10', status: 'Approved', lastUpdated: '2026-04-25', hrResponse: 'Approved', remarks: 'Application approved for printing', correctionStatus: 'No Action Required' },
-  { id: 'SID-2026-005', type: 'New Staff ID', reason: 'New Staff ID', submittedDate: '2026-06-10', status: 'Returned for Correction', lastUpdated: '2026-06-12', hrResponse: 'Returned for Correction', remarks: 'Please upload a clearer passport photograph and update your work station address.', correctionStatus: 'Pending Correction', returnedDate: '2026-06-12', returnedBy: 'Grace Mbelwa' },
+  { id: 'SID-2026-001', type: 'New Staff ID', reason: 'New Staff ID', submittedDate: '2026-06-15', status: 'Issued', lastUpdated: '2026-06-20', hrResponse: 'Approved', remarks: 'ID card printed and issued', correctionStatus: 'No Action Required', fullName: 'GOODLUCK EDWIN MSUYA', givenNames: 'GOODLUCK EDWIN', surname: 'MSUYA', sex: 'M', rank: 'ASSISTANT SUPERINTENDENT', employeeNumber: 'EMP-2026-00125', staffIdNumber: '3917', department: 'Immigration Services', workingStation: 'Dar es Salaam HQ', mobile: '+255712345678', email: 'goodluck.msuya@immigration.go.tz', bloodGroup: 'AB+', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', photo: defaultUserPhoto, photoUploaded: true, supportingDoc: 'passport_photo.jpg', comments: 'New employee ID request.', declaration: true },
+  { id: 'SID-2026-002', type: 'Replacement', reason: 'Lost ID', submittedDate: '2026-05-20', status: 'Ready for Collection', lastUpdated: '2026-06-28', hrResponse: 'Approved', remarks: 'Collect at HR Office, Block B', correctionStatus: 'No Action Required', fullName: 'John Michael Doe', givenNames: 'John Michael', surname: 'Doe', sex: 'M', rank: 'Senior HR Officer', employeeNumber: 'EMP-2024-00542', staffIdNumber: '4521', department: 'Human Resources', workingStation: 'Dar es Salaam HQ', mobile: '+255712345678', email: 'john.doe@immigration.go.tz', bloodGroup: 'A+', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', photo: defaultUserPhoto, photoUploaded: true, supportingDoc: 'police_loss_report.pdf', comments: 'Lost ID reported and police report attached.', declaration: true },
+  { id: 'SID-2026-003', type: 'Renewal', reason: 'Renewal', submittedDate: '2026-06-01', status: 'Under Review', lastUpdated: '2026-06-05', hrResponse: 'Pending', remarks: 'Awaiting document verification', correctionStatus: 'No Action Required', fullName: 'Asha Hamisi Juma', givenNames: 'Asha Hamisi', surname: 'Juma', sex: 'F', rank: 'Immigration Officer', employeeNumber: 'EMP-2024-00543', staffIdNumber: '4522', department: 'Immigration Services', workingStation: 'Dar es Salaam HQ', mobile: '+255722334455', email: 'asha.juma@immigration.go.tz', bloodGroup: 'B+', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', photo: defaultUserPhoto, photoUploaded: true, supportingDoc: 'existing_staff_id_scan.pdf', comments: 'Renewal of expired staff ID.', declaration: true },
+  { id: 'SID-2026-004', type: 'Replacement', reason: 'Damaged ID', submittedDate: '2026-04-10', status: 'Approved', lastUpdated: '2026-04-25', hrResponse: 'Approved', remarks: 'Application approved for printing', correctionStatus: 'No Action Required', fullName: 'Peter Emmanuel Mwita', givenNames: 'Peter Emmanuel', surname: 'Mwita', sex: 'M', rank: 'Finance Officer', employeeNumber: 'EMP-2024-00544', staffIdNumber: '4523', department: 'Finance', workingStation: 'Dodoma Regional Office', mobile: '+255733445566', email: 'peter.mwita@immigration.go.tz', bloodGroup: 'O+', territory: 'Tanzania Mainland', workingRegion: 'Dodoma', photo: defaultUserPhoto, photoUploaded: true, supportingDoc: 'damaged_id_scan.pdf', comments: 'ID card damaged during daily use.', declaration: true },
+  { id: 'SID-2026-005', type: 'New Staff ID', reason: 'New Staff ID', submittedDate: '2026-06-10', status: 'Returned for Correction', lastUpdated: '2026-06-12', hrResponse: 'Returned for Correction', remarks: 'Please upload a clearer passport photograph and update your work station address.', correctionStatus: 'Pending Correction', returnedDate: '2026-06-12', returnedBy: 'Grace Mbelwa', fullName: 'Neema Joseph Mollel', givenNames: 'Neema Joseph', surname: 'Mollel', sex: 'F', rank: 'Systems Analyst', employeeNumber: 'EMP-2024-00545', staffIdNumber: '4524', department: 'ICT', workingStation: 'Arusha Regional Office', mobile: '+255744556677', email: 'neema.mollel@immigration.go.tz', bloodGroup: 'AB+', territory: 'Tanzania Mainland', workingRegion: 'Arusha', photo: null, photoUploaded: false, supportingDoc: 'passport_photo.jpg', comments: 'Please upload a clearer passport photograph and update your work station address.', declaration: false },
 ];
 
 const TIMELINE = [
@@ -73,7 +90,7 @@ const TABS = [
   { key: 'status', label: 'Request Status' },
 ];
 
-const STEPS = ['Employee Verification', 'Personal Information', 'Request New ID', 'Declaration', 'Submit'];
+const STEPS = ['Employee Verification', 'Personal Information', 'Request New ID', 'Declaration'];
 
 const DEMO_EMPLOYEES = [
   { employeeId: 1, employeeNumber: 'EMP-001', fullName: 'John Michael Mushi', email: 'john.mushi@example.go.tz', phone: '+255712345678', department: 'Human Resource Management', designation: 'HR Officer', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', workingStation: 'Immigration Headquarters', nin: '19900101-12345-00001-01', checkNumber: 'CHK-00012345', bloodGroup: 'A+' },
@@ -113,8 +130,47 @@ function StaffIdPage() {
   const [declarationTimestamp, setDeclarationTimestamp] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [requestRef, setRequestRef] = useState('');
+  const [idQrCode, setIdQrCode] = useState('');
+  const idCardRef = useRef(null);
+
+  useEffect(() => {
+    if (!selectedApp) return;
+    const fullName = selectedApp.fullName || ID_CARD.name;
+    const employeeNo = selectedApp.employeeNumber || ID_CARD.employeeNo;
+    const staffIdNumber = selectedApp.staffIdNumber || selectedApp.id || ID_CARD.staffIdNumber;
+    const payload = `${employeeNo}\nID${staffIdNumber}\n${fullName}`;
+    QRCode.toDataURL(payload, { width: 130, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+      .then(url => setIdQrCode(url))
+      .catch(() => setIdQrCode(''));
+  }, [selectedApp]);
 
   const openApp = (app) => { setSelectedApp(app); setModalTab('info'); };
+
+  const handleViewAttachment = (att) => {
+    const preview = openBrandedHtml(`
+      <html>
+        <head><title>${att.name}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; background: #f5f7fa; padding: 40px; display: flex; justify-content: center; }
+            .preview { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 32px; max-width: 720px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+            h2 { margin: 0 0 8px; color: #0B2E59; font-size: 20px; }
+            p { color: #64748b; margin: 0 0 24px; }
+            .doc { background: #f0f4ff; border: 1px dashed #2F80ED; border-radius: 8px; height: 260px; display: flex; align-items: center; justify-content: center; color: #2F80ED; font-weight: 600; }
+          </style>
+        </head>
+        <body>
+          <div class="preview">
+            <h2>${att.name}</h2>
+            <p>${att.required ? 'Required document' : 'Optional document'}</p>
+            <div class="doc">Document preview placeholder</div>
+          </div>
+        </body>
+      </html>
+    `, att.name);
+    if (!preview) {
+      notificationService.info('Please allow popups to view attachments.');
+    }
+  };
 
   const openCorrection = (app) => {
     setEditingApp(app);
@@ -217,30 +273,119 @@ function StaffIdPage() {
     return `SID-${year}-0${num}`;
   };
 
-  const renderIdCard = () => (
-    <div className="id-card-visual">
-      <div className="id-card-header">
-        <div className="id-card-logo">TZ</div>
-        <div><div className="id-card-org-name">United Republic of Tanzania</div><div className="id-card-org-sub">Immigration Services Department</div></div>
-      </div>
-      <div className="id-card-body">
-        <div className="id-card-photo">{ID_CARD.photo ? <img src={ID_CARD.photo} alt="Staff" /> : <span className="id-card-photo-placeholder">JD</span>}</div>
-        <div>
-          <div className="id-card-name">{ID_CARD.name}</div>
-          <div className="id-card-designation">{ID_CARD.designation}</div>
-          <div className="id-card-meta"><span>Emp: {ID_CARD.employeeNo}</span><span>Dept: {ID_CARD.department}</span></div>
+  const getIdCardData = (data = {}) => {
+    const fullName = data.fullName || ID_CARD.name || '';
+    const nameParts = fullName.trim().split(/\s+/);
+    const surname = data.surname || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
+    const givenNames = data.givenNames || (nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : fullName);
+    return {
+      fullName,
+      employeeNumber: data.employeeNumber || ID_CARD.employeeNo,
+      staffIdNumber: data.staffIdNumber || data.id || ID_CARD.staffIdNumber,
+      givenNames,
+      surname,
+      sex: data.sex || data.gender || ID_CARD.sex,
+      rank: data.rank || data.designation || ID_CARD.rank,
+      bloodGroup: data.bloodGroup || ID_CARD.bloodGroup,
+      photo: data.photo || defaultUserPhoto,
+    };
+  };
+
+  const renderIdCardFront = (data, qrCode, cardRef) => {
+    const d = getIdCardData(data);
+    return (
+      <div className="staffid-official-id" ref={cardRef}>
+        <div className="staffid-id-watermark">SPECIMEN</div>
+        <div className="staffid-id-header">
+          <img src={coatOfArms} alt="Coat of Arms" className="staffid-id-logo-left" />
+          <div className="staffid-id-header-text">
+            <div>JAMHURI YA MUUNGANO WA TANZANIA</div>
+            <div>WIZARA YA MAMBO YA NDANI YA NCHI</div>
+            <div>IDARA YA UHAMIAJI</div>
+          </div>
+          <img src={immigrationLogo} alt="Immigration" className="staffid-id-logo-right" />
+          <div className="staffid-id-strip">
+            <div className="staffid-id-strip-green" />
+            <div className="staffid-id-strip-yellow" />
+            <div className="staffid-id-strip-black" />
+            <div className="staffid-id-strip-yellow" />
+            <div className="staffid-id-strip-blue" />
+          </div>
+        </div>
+        <div className="staffid-id-body">
+          <div className="staffid-id-title">
+            <h2>KITAMBULISHO CHA AFISA UHAMIAJI</h2>
+            <p>IMMIGRATION OFFICER IDENTITY CARD</p>
+          </div>
+          <div className="staffid-id-qr">
+            {qrCode ? <img src={qrCode} alt="QR Code" /> : <div className="staffid-id-qr-placeholder">QR</div>}
+          </div>
+          <div className="staffid-id-fields">
+            <div className="staffid-id-field"><span className="staffid-id-label">Utambulisho / ID No.</span><span className="staffid-id-value">{d.staffIdNumber}</span></div>
+            <div className="staffid-id-field"><span className="staffid-id-label">Jina / Given Names</span><span className="staffid-id-value">{d.givenNames}</span></div>
+            <div className="staffid-id-field"><span className="staffid-id-label">Jina la Ukoo / Surname</span><span className="staffid-id-value">{d.surname}</span></div>
+            <div className="staffid-id-field"><span className="staffid-id-label">Jinsia / Sex</span><span className="staffid-id-value">{d.sex}</span></div>
+            <div className="staffid-id-field"><span className="staffid-id-label">Cheo / Rank</span><span className="staffid-id-value">{d.rank}</span></div>
+            <div className="staffid-id-field"><span className="staffid-id-label">Kundi la Damu / Blood Group</span><span className="staffid-id-value">{d.bloodGroup}</span></div>
+          </div>
+          <img src={d.photo} alt="Employee" className="staffid-id-photo" />
         </div>
       </div>
-      <div className="id-card-footer">
-        <span>Issued: {ID_CARD.issued}</span>
-        <span>Expires: {ID_CARD.expires}</span>
-        <span className="id-card-status" style={{ ...STATUS_STYLE[ID_CARD.status], border: '1px solid rgba(255,255,255,0.3)' }}>{ID_CARD.status}</span>
-      </div>
-      <div style={{ position: 'absolute', bottom: 12, right: 16, zIndex: 1 }}>
-        <div className="id-card-qr"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-      </div>
-    </div>
-  );
+    );
+  };
+
+  const handleDownloadPng = async () => {
+    if (!idCardRef.current) return;
+    try {
+      const canvas = await html2canvas(idCardRef.current, { scale: 2, useCORS: true, backgroundColor: null });
+      const link = document.createElement('a');
+      link.download = `${selectedApp?.id || 'staff-id'}-staff-id.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      notificationService.error('Failed to download image.');
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!idCardRef.current) return;
+    try {
+      const canvas = await html2canvas(idCardRef.current, { scale: 3, useCORS: true, backgroundColor: null });
+      const dataUrl = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ unit: 'mm', format: [85.6, 53.98], orientation: 'landscape' });
+      pdf.addImage(dataUrl, 'PNG', 0, 0, 85.6, 53.98, undefined, 'FAST');
+      pdf.save(`${selectedApp?.id || 'staff-id'}-staff-id.pdf`);
+    } catch (err) {
+      notificationService.error('Failed to download PDF.');
+    }
+  };
+
+  const handlePrintPreview = async () => {
+    if (!idCardRef.current) return;
+    try {
+      const canvas = await html2canvas(idCardRef.current, { scale: 2, useCORS: true, backgroundColor: null });
+      const dataUrl = canvas.toDataURL('image/png');
+      const win = openBrandedHtml(`
+        <html>
+          <head><title>Print Staff ID - ${selectedApp?.id || ''}</title>
+            <style>
+              body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f5f7fa; }
+              img { max-width: 100%; max-height: 100vh; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+            </style>
+          </head>
+          <body>
+            <img src="${dataUrl}" alt="Staff ID" onload="setTimeout(function(){ window.print(); }, 300);" />
+          </body>
+        </html>
+      `, `Print Staff ID - ${selectedApp?.id || ''}`);
+      if (!win) {
+        notificationService.info('Please allow popups to print.');
+        return;
+      }
+    } catch (err) {
+      notificationService.error('Failed to open print preview.');
+    }
+  };
 
   return (
     <div className="module-content">
@@ -289,12 +434,7 @@ function StaffIdPage() {
                 ) : step === 4 ? (
                   <div className="leave-form-actions">
                     <button className="btn btn-secondary" onClick={() => setStep(3)}>Previous</button>
-                    <button className="btn btn-primary" disabled={!declared} onClick={() => setStep(5)}>Next: Review</button>
-                  </div>
-                ) : step === 5 ? (
-                  <div className="leave-form-actions">
-                    <button className="btn btn-secondary" onClick={() => setStep(4)}>Previous</button>
-                    <button className="btn btn-primary" onClick={() => { setRequestRef(generateRefNumber()); setSubmitted(true); }}>Submit Request</button>
+                    <button className="btn btn-primary" disabled={!declared} onClick={() => { setRequestRef(generateRefNumber()); setSubmitted(true); }}>Submit Request</button>
                   </div>
                 ) : null
               ) : (
@@ -537,32 +677,6 @@ function StaffIdPage() {
                   </>
                 )}
 
-                {step === 5 && (
-                  <>
-                    <div className="leave-form-section">
-                      <h4 className="leave-form-section-title">Application Summary</h4>
-                      <div className="leave-detail-grid" style={{ marginBottom: 24 }}>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Name</span><span className="leave-detail-value">{verifiedEmployee?.fullName}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Number</span><span className="leave-detail-value">{verifiedEmployee?.employeeNumber}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Department</span><span className="leave-detail-value">{personalInfo.department}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Working Station</span><span className="leave-detail-value">{personalInfo.workingStation}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Mobile Number</span><span className="leave-detail-value">{personalInfo.mobileNumber}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Email Address</span><span className="leave-detail-value">{personalInfo.emailAddress}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Blood Group</span><span className="leave-detail-value">{personalInfo.bloodGroup}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">ID Request Type</span><span className="leave-detail-value">{requestDetails.idType}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Photo Uploaded</span><span className="leave-detail-value">{personalInfo.photo ? 'Yes' : 'No'}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Supporting Document</span><span className="leave-detail-value">{requestDetails.supportingDoc ? requestDetails.supportingDoc.name : 'None'}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Declaration</span><span className="leave-detail-value">{declared ? 'Accepted' : 'Not Accepted'}</span></div>
-                      </div>
-                      {requestDetails.comments && (
-                        <>
-                          <h5 style={{ fontSize: 13, fontWeight: 700, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.8 }}>Comments / Reasons</h5>
-                          <p style={{ fontSize: 14, color: 'var(--color-text)', background: 'var(--color-bg)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: 16 }}>{requestDetails.comments}</p>
-                        </>
-                      )}
-                    </div>
-                  </>
-                )}
               </>
             ) : (
               <div className="staffid-success">
@@ -698,7 +812,7 @@ function StaffIdPage() {
         )}
 
         {selectedApp && (
-          <Modal isOpen={!!selectedApp} onClose={() => setSelectedApp(null)} title={`Application Details - ${selectedApp.id}`} footer={<button className="btn btn-secondary" onClick={() => setSelectedApp(null)}>Close</button>}>
+          <Modal isOpen={!!selectedApp} onClose={() => setSelectedApp(null)} title={`Application Details - ${selectedApp.id}`} size="xl" className="staffid-detail-modal" footer={<button className="btn btn-secondary" onClick={() => setSelectedApp(null)}>Close</button>}>
             <div className="staffid-modal-tabs">
               {[{ key: 'info', label: 'Application Info' }, { key: 'attachments', label: 'Attachments' }, { key: 'preview', label: 'ID Preview' }, { key: 'timeline', label: 'Timeline' }].map(t => (
                 <button key={t.key} className={`staffid-modal-tab ${modalTab === t.key ? 'active' : ''}`} onClick={() => setModalTab(t.key)}>{t.label}</button>
@@ -711,17 +825,59 @@ function StaffIdPage() {
                   <span className="leave-detail-status-label">Status</span>
                   <span className="status-pill" style={{ background: STATUS_STYLE[selectedApp.status]?.background, color: STATUS_STYLE[selectedApp.status]?.color }}>{selectedApp.status}</span>
                 </div>
+
                 <div className="leave-detail-section">
                   <h5 className="leave-detail-section-title">Application Information</h5>
-                  <div className="leave-detail-grid">
+                  <div className="leave-detail-grid leave-detail-grid--3col">
                     <div className="leave-detail-item"><span className="leave-detail-label">Application No</span><span className="leave-detail-value">{selectedApp.id}</span></div>
                     <div className="leave-detail-item"><span className="leave-detail-label">Application Type</span><span className="leave-detail-value">{selectedApp.type}</span></div>
                     <div className="leave-detail-item"><span className="leave-detail-label">Reason</span><span className="leave-detail-value">{selectedApp.reason}</span></div>
                     <div className="leave-detail-item"><span className="leave-detail-label">Submitted Date</span><span className="leave-detail-value">{selectedApp.submittedDate}</span></div>
                     <div className="leave-detail-item"><span className="leave-detail-label">Last Updated</span><span className="leave-detail-value">{selectedApp.lastUpdated}</span></div>
-                    <div className="leave-detail-item"><span className="leave-detail-label">Applicant</span><span className="leave-detail-value">{ID_CARD.name}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">HR Response</span><span className="leave-detail-value">{selectedApp.hrResponse}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Correction Status</span><span className="leave-detail-value">{selectedApp.correctionStatus}</span></div>
+                    {selectedApp.returnedDate && <div className="leave-detail-item"><span className="leave-detail-label">Returned Date</span><span className="leave-detail-value">{selectedApp.returnedDate}</span></div>}
+                    {selectedApp.returnedBy && <div className="leave-detail-item"><span className="leave-detail-label">Returned By</span><span className="leave-detail-value">{selectedApp.returnedBy}</span></div>}
                   </div>
                 </div>
+
+                <div className="leave-detail-section">
+                  <h5 className="leave-detail-section-title">Employee & Personal Information</h5>
+                  <div className="leave-detail-grid leave-detail-grid--3col">
+                    <div className="leave-detail-item"><span className="leave-detail-label">Employee Name</span><span className="leave-detail-value">{selectedApp.fullName}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Employee Number</span><span className="leave-detail-value">{selectedApp.employeeNumber}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Department</span><span className="leave-detail-value">{selectedApp.department}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Working Station</span><span className="leave-detail-value">{selectedApp.workingStation}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Territory</span><span className="leave-detail-value">{selectedApp.territory}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Working Region</span><span className="leave-detail-value">{selectedApp.workingRegion}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Mobile Number</span><span className="leave-detail-value">{selectedApp.mobile}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Email Address</span><span className="leave-detail-value">{selectedApp.email}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Blood Group</span><span className="leave-detail-value">{selectedApp.bloodGroup}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Photo Uploaded</span><span className="leave-detail-value">{selectedApp.photoUploaded ? 'Yes' : 'No'}</span></div>
+                  </div>
+                </div>
+
+                <div className="leave-detail-section">
+                  <h5 className="leave-detail-section-title">Request Details</h5>
+                  <div className="leave-detail-grid leave-detail-grid--3col">
+                    <div className="leave-detail-item"><span className="leave-detail-label">ID Request Type</span><span className="leave-detail-value">{selectedApp.type}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Supporting Document</span><span className="leave-detail-value">{selectedApp.supportingDoc || 'None'}</span></div>
+                    <div className="leave-detail-item"><span className="leave-detail-label">Declaration</span><span className="leave-detail-value">{selectedApp.declaration ? 'Accepted' : 'Not Accepted'}</span></div>
+                  </div>
+                  {selectedApp.comments && (
+                    <div style={{ marginTop: 16 }}>
+                      <span className="leave-detail-label" style={{ display: 'block', marginBottom: 6 }}>Comments / Reasons</span>
+                      <p style={{ fontSize: 14, color: 'var(--color-text)', background: 'var(--color-bg)', padding: '12px 16px', borderRadius: 'var(--radius-md)', margin: 0, lineHeight: 1.5 }}>{selectedApp.comments}</p>
+                    </div>
+                  )}
+                </div>
+
+                {selectedApp.remarks && (
+                  <div className="leave-detail-section">
+                    <h5 className="leave-detail-section-title">HR Remarks</h5>
+                    <p style={{ fontSize: 14, color: 'var(--color-text)', background: 'var(--color-bg)', padding: '12px 16px', borderRadius: 'var(--radius-md)', margin: 0, lineHeight: 1.5 }}>{selectedApp.remarks}</p>
+                  </div>
+                )}
               </>
             )}
 
@@ -733,14 +889,25 @@ function StaffIdPage() {
                     <div key={idx} className="attachment-row">
                       <div className="attachment-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
                       <div className="attachment-info"><p className="attachment-name">{att.name}</p><p className="attachment-hint">{att.required ? 'Required document' : 'Optional document'}</p></div>
-                      <div className="attachment-actions"><button className="btn btn-sm btn-primary">View</button></div>
+                      <div className="attachment-actions"><button className="btn btn-sm btn-primary" onClick={() => handleViewAttachment(att)}>View</button></div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {modalTab === 'preview' && <div className="id-card-preview-wrap" style={{ padding: 0 }}>{renderIdCard()}</div>}
+            {modalTab === 'preview' && (
+              <div className="id-card-preview-wrap">
+                <div className="staffid-id-card-wrapper">
+                  {renderIdCardFront(selectedApp, idQrCode, idCardRef)}
+                </div>
+                <div className="staffid-id-actions">
+                  <button className="btn btn-primary" onClick={handleDownloadPng}>Download Image</button>
+                  <button className="btn btn-primary" onClick={handleDownloadPdf}>Download PDF</button>
+                  <button className="btn btn-secondary" onClick={handlePrintPreview}>Print Preview</button>
+                </div>
+              </div>
+            )}
 
             {modalTab === 'timeline' && (
               <div className="staffid-timeline" style={{ marginTop: 0 }}>
