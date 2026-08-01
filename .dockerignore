@@ -1,0 +1,11 @@
+node_modules
+build
+.git
+.gitignore
+README.md
+.vscode
+.idea
+*.log
+tmp_img_*.ps1
+logo_base64.txt
+build.log

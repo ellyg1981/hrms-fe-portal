@@ -175,6 +175,8 @@
   box-shadow: 0 10px 40px rgba(0,0,0,0.12);
   padding: 24px;
   margin-bottom: var(--space-5);
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .staffid-official-id {
@@ -378,6 +380,10 @@
   .staffid-id-qr { width: 64px; height: 64px; }
   .staffid-id-value { font-size: 11px; }
   .staffid-id-label { font-size: 7px; }
+}
+
+@media (max-width: 575px) {
+  .staffid-id-actions button { min-width: auto; width: 100%; }
 }
 
 /* ── Attachment Upload Rows ── */
@@ -901,4 +907,71 @@
   .staffid-step-label { display: none; }
   .id-card-visual { width: 100%; max-width: 340px; }
   .attachment-row { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Read-Only API Fields ── */
+.form-input--readonly {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text) !important;
+  cursor: default;
+  border-color: var(--color-border-light) !important;
+}
+
+.form-input--readonly:disabled,
+.form-input--readonly[readonly] {
+  opacity: 1;
+}
+
+.form-input--readonly:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--color-border-light);
+}
+
+.staffid-photo-upload--readonly .staffid-photo-preview {
+  pointer-events: none;
+}
+
+.staffid-photo-upload--readonly .staffid-photo-preview img {
+  max-height: 180px;
+}
+
+.staffid-locked-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+}
+
+.staffid-locked-label svg {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+/* ── Employee Verification Row ── */
+.staffid-verify-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  align-items: end;
+  margin-bottom: var(--space-3);
+}
+
+.staffid-verify-row:last-child {
+  margin-bottom: 0;
+}
+
+.staffid-verify-row .form-group {
+  margin-bottom: 0;
+}
+
+.staffid-verify-row .btn {
+  width: 100%;
+  height: 48px;
+}
+
+@media (max-width: 768px) {
+  .staffid-verify-row {
+    grid-template-columns: 1fr;
+  }
 }

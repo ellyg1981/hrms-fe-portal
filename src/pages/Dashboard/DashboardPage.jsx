@@ -45,9 +45,9 @@ const SERVICE_CARDS = [
     iconBg: '#EFF6FF',
   },
   {
-    title: 'Notifications',
-    description: 'View your latest notifications and activity alerts.',
-    path: '/modules/notifications',
+    title: 'Announcements',
+    description: 'Stay informed with the latest organizational announcements, notices, policy updates, and important staff communications.',
+    path: '/modules/announcements',
     icon: <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>,
     iconColor: '#E11D48',
     iconBg: '#FFF1F2',

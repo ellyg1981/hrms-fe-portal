@@ -231,16 +231,16 @@ function AppLayout({ children, title, subtitle, headerRight }) {
           </div>
         </div>
         <div className="modal-form-row">
-          <div className="modal-form-group"><label className="modal-form-label">Full Name</label><div className="modal-form-value">{user?.name || 'System Admin'}</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Employee Number</label><div className="modal-form-value">EMP-2024-001</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Designation</label><div className="modal-form-value">Senior Officer</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Department</label><div className="modal-form-value">Human Resources</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Directorate/Unit</label><div className="modal-form-value">HR Operations</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Office Location</label><div className="modal-form-value">Head Office - DSM</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Work Email</label><div className="modal-form-value">{user?.email || 'admin@immigration.go.tz'}</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Phone Number</label><div className="modal-form-value">+255 712 345 678</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Employment Status</label><div className="modal-form-value">Permanent</div></div>
-          <div className="modal-form-group"><label className="modal-form-label">Date Joined</label><div className="modal-form-value">15 Jan 2020</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Full Name</label><div className="modal-form-value">{user?.fullName || user?.name || 'System Admin'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Employee Number</label><div className="modal-form-value">{user?.employeeNumber || '-'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Designation</label><div className="modal-form-value">{user?.designation || '-'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Department</label><div className="modal-form-value">{user?.department || '-'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Directorate/Unit</label><div className="modal-form-value">{user?.department || '-'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Office Location</label><div className="modal-form-value">{user?.workingStation || '-'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Work Email</label><div className="modal-form-value">{user?.officialEmail || user?.email || 'admin@immigration.go.tz'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Phone Number</label><div className="modal-form-value">{user?.phoneNumber || user?.phone || '-'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Employment Status</label><div className="modal-form-value">{user?.employmentType || 'Permanent'}</div></div>
+          <div className="modal-form-group"><label className="modal-form-label">Date Joined</label><div className="modal-form-value">{user?.dateOfFirstAppointment ? new Date(user.dateOfFirstAppointment).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</div></div>
         </div>
       </Modal>
 

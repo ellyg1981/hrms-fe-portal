@@ -7,6 +7,8 @@ import QRCode from 'qrcode';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { openBrandedHtml } from '../../../utils/preview';
+import { useAuth } from '../../../context/AuthContext';
+import { searchEmployee } from '../../../services/employeeApi';
 import coatOfArms from '../../../assets/images/coat_of_arms.png';
 import immigrationLogo from '../../../assets/images/uhamiaji_logo.png';
 import defaultUserPhoto from '../../../assets/images/photo.png';
@@ -92,15 +94,8 @@ const TABS = [
 
 const STEPS = ['Employee Verification', 'Personal Information', 'Request New ID', 'Declaration'];
 
-const DEMO_EMPLOYEES = [
-  { employeeId: 1, employeeNumber: 'EMP-001', fullName: 'John Michael Mushi', email: 'john.mushi@example.go.tz', phone: '+255712345678', department: 'Human Resource Management', designation: 'HR Officer', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', workingStation: 'Immigration Headquarters', nin: '19900101-12345-00001-01', checkNumber: 'CHK-00012345', bloodGroup: 'A+' },
-  { employeeId: 2, employeeNumber: 'EMP-002', fullName: 'Asha Hamisi Juma', email: 'asha.juma@example.go.tz', phone: '+255722334455', department: 'Immigration Services', designation: 'Immigration Officer', territory: 'Tanzania Mainland', workingRegion: 'Dar es Salaam', workingStation: 'Immigration Headquarters', nin: '19880515-23456-00002-02', checkNumber: 'CHK-00012346', bloodGroup: 'B+' },
-  { employeeId: 3, employeeNumber: 'EMP-003', fullName: 'Peter Emmanuel Mwita', email: 'peter.mwita@example.go.tz', phone: '+255733445566', department: 'Finance', designation: 'Finance Officer', territory: 'Tanzania Mainland', workingRegion: 'Dodoma', workingStation: 'Immigration Headquarters', nin: '19920320-34567-00003-03', checkNumber: 'CHK-00012347', bloodGroup: 'O+' },
-  { employeeId: 4, employeeNumber: 'EMP-004', fullName: 'Neema Joseph Mollel', email: 'neema.mollel@example.go.tz', phone: '+255744556677', department: 'ICT', designation: 'Systems Analyst', territory: 'Tanzania Mainland', workingRegion: 'Arusha', workingStation: 'Arusha Regional Office', nin: '19950712-45678-00004-04', checkNumber: 'CHK-00012348', bloodGroup: 'AB+' },
-  { employeeId: 5, employeeNumber: 'EMP-005', fullName: 'David Robert Kweka', email: 'david.kweka@example.go.tz', phone: '+255755667788', department: 'Administration', designation: 'Administrative Officer', territory: 'Tanzania Mainland', workingRegion: 'Mwanza', workingStation: 'Mwanza Regional Office', nin: '19891225-56789-00005-05', checkNumber: 'CHK-00012349', bloodGroup: 'O-' },
-];
-
 function StaffIdPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('my');
   const [step, setStep] = useState(1);
   const [selectedApp, setSelectedApp] = useState(null);
@@ -112,14 +107,29 @@ function StaffIdPage() {
   const [verifyForm, setVerifyForm] = useState({ checkNumber: '', nin: '' });
   const [verifyError, setVerifyError] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
-  const [verifiedEmployee, setVerifiedEmployee] = useState(null);
   const [isVerified, setIsVerified] = useState(false);
 
-  const [personalInfo, setPersonalInfo] = useState({
+  const [employeeRecord, setEmployeeRecord] = useState({
+    employeeId: '', employeeNumber: '', checkNumber: '', nin: '',
+    fullName: '', givenNames: '', surname: '', gender: '', dob: '',
+    nationality: '', maritalStatus: '', photo: '',
     territory: '', workingRegion: '', workingStation: '', department: '',
-    mobileNumber: '', emailAddress: '', bloodGroup: '', photo: null,
+    designation: '', employmentType: '', appointmentDate: '', dutyStation: '',
+    region: '', district: '', position: '',
+    mobileNumber: '', emailAddress: '', officialEmail: '', phoneNumber: '',
+    ward: '', physicalAddress: '', postalAddress: '',
+    bloodGroup: '',
   });
+  const [idPhoto, setIdPhoto] = useState(null);
   const photoInputRef = useRef(null);
+
+  const hasIdentifiers = Boolean(user?.checkNumber && user?.nin);
+
+  useEffect(() => {
+    if (showRequestModal && !hasIdentifiers) {
+      notificationService.error('Employee verification information is incomplete. Please contact HR support.');
+    }
+  }, [showRequestModal, hasIdentifiers]);
 
   const [requestDetails, setRequestDetails] = useState({
     idType: 'New Staff ID', comments: '', supportingDoc: null,
@@ -172,6 +182,18 @@ function StaffIdPage() {
     }
   };
 
+  const buildInitialEmployeeRecord = () => ({
+    employeeId: '', employeeNumber: '', checkNumber: '', nin: '',
+    fullName: '', givenNames: '', surname: '', gender: '', dob: '',
+    nationality: '', maritalStatus: '', photo: '',
+    territory: '', workingRegion: '', workingStation: '', department: '',
+    designation: '', employmentType: '', appointmentDate: '', dutyStation: '',
+    region: '', district: '', position: '',
+    mobileNumber: '', emailAddress: '', officialEmail: '', phoneNumber: '',
+    ward: '', physicalAddress: '', postalAddress: '',
+    bloodGroup: '',
+  });
+
   const openCorrection = (app) => {
     setEditingApp(app);
     setShowRequestModal(true);
@@ -179,10 +201,10 @@ function StaffIdPage() {
     setSubmitted(false);
     setDeclared(false);
     setIsVerified(false);
-    setVerifiedEmployee(null);
-    setVerifyForm({ checkNumber: '', nin: '' });
+    setEmployeeRecord(buildInitialEmployeeRecord());
+    setIdPhoto(null);
+    setVerifyForm({ checkNumber: (user?.checkNumber || '').toString(), nin: (user?.nin || '').toString() });
     setVerifyError('');
-    setPersonalInfo({ territory: '', workingRegion: '', workingStation: '', department: '', mobileNumber: '', emailAddress: '', bloodGroup: '', photo: null });
     setRequestDetails({ idType: 'New Staff ID', comments: '', supportingDoc: null });
     setDeclarationTimestamp(null);
   };
@@ -194,46 +216,73 @@ function StaffIdPage() {
     setSubmitted(false);
     setDeclared(false);
     setIsVerified(false);
-    setVerifiedEmployee(null);
-    setVerifyForm({ checkNumber: '', nin: '' });
+    setEmployeeRecord(buildInitialEmployeeRecord());
+    setIdPhoto(null);
+    setVerifyForm({ checkNumber: (user?.checkNumber || '').toString(), nin: (user?.nin || '').toString() });
     setVerifyError('');
-    setPersonalInfo({ territory: '', workingRegion: '', workingStation: '', department: '', mobileNumber: '', emailAddress: '', bloodGroup: '', photo: null });
     setRequestDetails({ idType: 'New Staff ID', comments: '', supportingDoc: null });
     setDeclarationTimestamp(null);
   };
 
-  const handleVerify = () => {
+  const mapEmployeeToRecord = (emp) => ({
+    employeeId: emp.employeeId || '',
+    employeeNumber: emp.employeeNumber || '',
+    checkNumber: emp.checkNumber || '',
+    nin: emp.nin || '',
+    fullName: emp.fullName || '',
+    givenNames: emp.givenNames || '',
+    surname: emp.surname || '',
+    gender: emp.gender || '',
+    dob: emp.dob || '',
+    nationality: emp.nationality || '',
+    maritalStatus: emp.maritalStatus || '',
+    photo: emp.photo || '',
+    territory: emp.territory || '',
+    workingRegion: emp.workingRegion || '',
+    workingStation: emp.workingStation || '',
+    department: emp.department || '',
+    designation: emp.designation || '',
+    employmentType: emp.employmentType || '',
+    appointmentDate: emp.appointmentDate || '',
+    dutyStation: emp.dutyStation || '',
+    region: emp.region || '',
+    district: emp.district || '',
+    position: emp.position || '',
+    mobileNumber: emp.mobileNumber || emp.phoneNumber || emp.mobile || emp.phone || '',
+    emailAddress: emp.emailAddress || emp.email || emp.officialEmail || '',
+    officialEmail: emp.officialEmail || emp.emailAddress || emp.email || '',
+    phoneNumber: emp.phoneNumber || emp.mobileNumber || emp.mobile || emp.phone || '',
+    ward: emp.ward || '',
+    physicalAddress: emp.physicalAddress || '',
+    postalAddress: emp.postalAddress || '',
+    bloodGroup: emp.bloodGroup || '',
+  });
+
+  const handleVerify = async () => {
     setVerifyError('');
-    if (!verifyForm.checkNumber.trim() && !verifyForm.nin.trim()) {
-      setVerifyError('Please enter either your Check Number or National ID (NIN).');
+    if (!hasIdentifiers) {
+      setVerifyError('Employee verification information is incomplete. Please contact HR support.');
       return;
     }
     setVerifyLoading(true);
-    setTimeout(() => {
-      setVerifyLoading(false);
-      const found = DEMO_EMPLOYEES.find(emp =>
-        (verifyForm.checkNumber.trim() && emp.checkNumber === verifyForm.checkNumber.trim()) ||
-        (verifyForm.nin.trim() && emp.nin === verifyForm.nin.trim())
+    try {
+      const employee = await notificationService.promise(
+        searchEmployee({ checkNumber: user?.checkNumber || '', nin: user?.nin || '' }),
+        {
+          loading: 'Searching employee record...',
+          success: 'Employee information verified successfully.',
+          error: (err) => err?.message || 'Employee information could not be found. Please verify your details and try again.',
+        }
       );
-      if (!found) {
-        setVerifyError('No employee record found. Please verify your Check Number or National ID (NIN), or contact HR support.');
-        setIsVerified(false);
-        setVerifiedEmployee(null);
-        return;
-      }
-      setVerifiedEmployee(found);
+      setEmployeeRecord(mapEmployeeToRecord(employee));
       setIsVerified(true);
-      setPersonalInfo({
-        territory: found.territory || '',
-        workingRegion: found.workingRegion || '',
-        workingStation: found.workingStation || '',
-        department: found.department || '',
-        mobileNumber: found.phone || '',
-        emailAddress: found.email || '',
-        bloodGroup: found.bloodGroup || '',
-        photo: null,
-      });
-    }, 800);
+    } catch (err) {
+      setEmployeeRecord(buildInitialEmployeeRecord());
+      setIsVerified(false);
+      setVerifyError(err?.message || 'Employee information could not be found. Please verify your details and try again.');
+    } finally {
+      setVerifyLoading(false);
+    }
   };
 
   const handlePhotoUpload = (e) => {
@@ -244,7 +293,7 @@ function StaffIdPage() {
       return;
     }
     const reader = new FileReader();
-    reader.onload = (ev) => setPersonalInfo(prev => ({ ...prev, photo: ev.target.result }));
+    reader.onload = (ev) => setIdPhoto(ev.target.result);
     reader.readAsDataURL(file);
   };
 
@@ -469,39 +518,53 @@ function StaffIdPage() {
                     )}
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Employee Verification</h4>
-                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Enter either your Check Number or National ID (NIN) to verify your employee record.</p>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Your employee identifiers are pre-filled from your HRMS profile and are read-only.</p>
+                      {!hasIdentifiers && (
+                        <div className="login-modal-error" style={{ marginBottom: 16 }}>
+                          Employee verification information is incomplete. Please contact HR support.
+                        </div>
+                      )}
                       {verifyError && <div className="login-modal-error" style={{ marginBottom: 16 }}>{verifyError}</div>}
-                      {isVerified && verifiedEmployee && (
+                      {isVerified && employeeRecord && (
                         <div className="staffid-verify-success" style={{ marginBottom: 16 }}>
                           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#059669" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                           <div>
                             <strong>Employee Verified Successfully</strong>
                             <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>
-                              {verifiedEmployee.fullName} &middot; {verifiedEmployee.employeeNumber}
+                              {employeeRecord.fullName} &middot; {employeeRecord.employeeNumber}
                             </div>
                           </div>
                         </div>
                       )}
-                      <div className="leave-form-row">
+                      <div className="staffid-verify-row">
                         <div className="form-group">
-                          <label className="form-label">Check Number</label>
-                          <input type="text" className="form-input" value={verifyForm.checkNumber} onChange={e => { setVerifyForm(prev => ({ ...prev, checkNumber: e.target.value })); setVerifyError(''); }} placeholder="e.g. CHK-00012345" disabled={isVerified} />
+                          <label className="form-label staffid-locked-label">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="11" width="14" height="10" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            Check Number
+                          </label>
+                          <input type="text" className="form-input form-input--readonly" value={verifyForm.checkNumber} readOnly />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">National ID (NIN)</label>
-                          <input type="text" className="form-input" value={verifyForm.nin} onChange={e => { setVerifyForm(prev => ({ ...prev, nin: e.target.value })); setVerifyError(''); }} placeholder="e.g. 19900101-12345-00001-01" disabled={isVerified} />
+                          <label className="form-label staffid-locked-label">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="11" width="14" height="10" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            National ID (NIN)
+                          </label>
+                          <input type="text" className="form-input form-input--readonly" value={verifyForm.nin} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <span className="form-label" style={{ visibility: 'hidden' }} aria-hidden="true">&nbsp;</span>
+                          {!isVerified && (
+                            <button className="btn btn-primary" onClick={handleVerify} disabled={!hasIdentifiers || verifyLoading}>
+                              {verifyLoading ? 'Verifying...' : 'Search Employee'}
+                            </button>
+                          )}
+                          {isVerified && (
+                            <button className="btn btn-secondary" onClick={() => { setIsVerified(false); setEmployeeRecord(buildInitialEmployeeRecord()); setIdPhoto(null); }}>
+                              Clear Results
+                            </button>
+                          )}
                         </div>
                       </div>
-                      {!isVerified && (
-                        <button className="btn btn-primary" onClick={handleVerify} disabled={verifyLoading}>
-                          {verifyLoading ? 'Verifying...' : 'Verify Employee'}
-                        </button>
-                      )}
-                      {isVerified && (
-                        <button className="btn btn-secondary" onClick={() => { setIsVerified(false); setVerifiedEmployee(null); setVerifyForm({ checkNumber: '', nin: '' }); }}>
-                          Reset Verification
-                        </button>
-                      )}
                     </div>
                   </>
                 )}
@@ -510,35 +573,39 @@ function StaffIdPage() {
                   <>
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Personal Information</h4>
-                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Review and complete your personal details below.</p>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>The following details are retrieved from the official HRMS employee record and are read-only.</p>
                       <div className="leave-form-row">
                         <div className="form-group">
-                          <label className="form-label">Territory</label>
-                          <input type="text" className="form-input" value={personalInfo.territory} onChange={e => setPersonalInfo(prev => ({ ...prev, territory: e.target.value }))} placeholder="e.g. Tanzania Mainland" />
+                          <label className="form-label">Employee Number</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.employeeNumber} readOnly />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">Working Region</label>
-                          <input type="text" className="form-input" value={personalInfo.workingRegion} onChange={e => setPersonalInfo(prev => ({ ...prev, workingRegion: e.target.value }))} placeholder="e.g. Dar es Salaam" />
+                          <label className="form-label">Full Name</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.fullName} readOnly />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">Working Station</label>
-                          <input type="text" className="form-input" value={personalInfo.workingStation} onChange={e => setPersonalInfo(prev => ({ ...prev, workingStation: e.target.value }))} placeholder="e.g. Dar es Salaam HQ" />
+                          <label className="form-label">National ID (NIN)</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.nin} readOnly />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">Department</label>
-                          <input type="text" className="form-input" value={personalInfo.department} onChange={e => setPersonalInfo(prev => ({ ...prev, department: e.target.value }))} placeholder="e.g. Human Resources" />
+                          <label className="form-label">Gender</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.gender} readOnly />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">Mobile Number</label>
-                          <input type="text" className="form-input" value={personalInfo.mobileNumber} onChange={e => setPersonalInfo(prev => ({ ...prev, mobileNumber: e.target.value }))} placeholder="e.g. +255712345678" />
+                          <label className="form-label">Date of Birth</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.dob} readOnly />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">Email Address</label>
-                          <input type="email" className="form-input" value={personalInfo.emailAddress} onChange={e => setPersonalInfo(prev => ({ ...prev, emailAddress: e.target.value }))} placeholder="e.g. john.doe@immigration.go.tz" />
+                          <label className="form-label">Nationality</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.nationality} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Marital Status</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.maritalStatus} readOnly />
                         </div>
                         <div className="form-group">
                           <label className="form-label">Blood Group</label>
-                          <select className="form-input form-select" value={personalInfo.bloodGroup} onChange={e => setPersonalInfo(prev => ({ ...prev, bloodGroup: e.target.value }))}>
+                          <select className="form-input form-select form-input--readonly" value={employeeRecord.bloodGroup} disabled>
                             <option value="">Select blood group</option>
                             <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
                             <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
@@ -546,17 +613,111 @@ function StaffIdPage() {
                         </div>
                       </div>
                     </div>
+
                     <div className="leave-form-section">
-                      <h4 className="leave-form-section-title">Upload Current Photo</h4>
+                      <h4 className="leave-form-section-title">Employment Information</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Employment details are read-only and sourced from HRMS.</p>
+                      <div className="leave-form-row">
+                        <div className="form-group">
+                          <label className="form-label">Department / Unit</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.department} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Designation</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.designation} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Employment Type</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.employmentType} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Appointment Date</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.appointmentDate} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Duty Station</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.dutyStation} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Region</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.region} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">District</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.district} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Position</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.position} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Territory</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.territory} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Working Region</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.workingRegion} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Working Station</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.workingStation} readOnly />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Contact & Address Information</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Contact details are read-only and sourced from HRMS.</p>
+                      <div className="leave-form-row">
+                        <div className="form-group">
+                          <label className="form-label">Official Email</label>
+                          <input type="email" className="form-input form-input--readonly" value={employeeRecord.officialEmail} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Phone Number</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.phoneNumber} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Mobile Number</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.mobileNumber} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Ward</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.ward} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Physical Address</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.physicalAddress} readOnly />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Postal Address</label>
+                          <input type="text" className="form-input form-input--readonly" value={employeeRecord.postalAddress} readOnly />
+                        </div>
+                      </div>
+                    </div>
+                    {employeeRecord.photo && (
+                      <div className="leave-form-section">
+                        <h4 className="leave-form-section-title">Employee Photo (HRMS)</h4>
+                        <p className="leave-section-desc" style={{ marginBottom: 16 }}>Employee photo retrieved from the official HRMS record.</p>
+                        <div className="staffid-photo-upload staffid-photo-upload--readonly">
+                          <div className="staffid-photo-preview">
+                            <img src={employeeRecord.photo} alt="Employee" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Upload Current Photo for Staff ID</h4>
                       <p className="leave-section-desc" style={{ marginBottom: 16 }}>Upload a passport-size photo. Allowed: JPEG, PNG (max 5MB).</p>
                       <input type="file" ref={photoInputRef} className="file-upload-input" accept=".jpg,.jpeg,.png" onChange={handlePhotoUpload} />
                       <div className="staffid-photo-upload">
-                        {personalInfo.photo ? (
+                        {idPhoto ? (
                           <div className="staffid-photo-preview">
-                            <img src={personalInfo.photo} alt="Employee" />
+                            <img src={idPhoto} alt="Employee" />
                             <div className="staffid-photo-actions">
                               <button className="btn btn-sm btn-secondary" onClick={() => photoInputRef.current?.click()}>Replace</button>
-                              <button className="btn btn-sm btn-secondary" onClick={() => setPersonalInfo(prev => ({ ...prev, photo: null }))}>Remove</button>
+                              <button className="btn btn-sm btn-secondary" onClick={() => setIdPhoto(null)}>Remove</button>
                             </div>
                           </div>
                         ) : (
@@ -620,11 +781,11 @@ function StaffIdPage() {
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Employee Verification</h4>
                       <div className="leave-detail-grid leave-detail-grid--3col">
-                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Name</span><span className="leave-detail-value">{verifiedEmployee?.fullName}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Number</span><span className="leave-detail-value">{verifiedEmployee?.employeeNumber}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Check Number</span><span className="leave-detail-value">{verifiedEmployee?.checkNumber}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">National ID (NIN)</span><span className="leave-detail-value">{verifiedEmployee?.nin}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Designation</span><span className="leave-detail-value">{verifiedEmployee?.designation}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Name</span><span className="leave-detail-value">{employeeRecord?.fullName}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Number</span><span className="leave-detail-value">{employeeRecord?.employeeNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Check Number</span><span className="leave-detail-value">{employeeRecord?.checkNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">National ID (NIN)</span><span className="leave-detail-value">{employeeRecord?.nin}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Designation</span><span className="leave-detail-value">{employeeRecord?.designation}</span></div>
                       </div>
                     </div>
 
@@ -632,14 +793,46 @@ function StaffIdPage() {
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Personal Information</h4>
                       <div className="leave-detail-grid leave-detail-grid--3col">
-                        <div className="leave-detail-item"><span className="leave-detail-label">Territory</span><span className="leave-detail-value">{personalInfo.territory}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Working Region</span><span className="leave-detail-value">{personalInfo.workingRegion}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Working Station</span><span className="leave-detail-value">{personalInfo.workingStation}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Department</span><span className="leave-detail-value">{personalInfo.department}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Mobile Number</span><span className="leave-detail-value">{personalInfo.mobileNumber}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Email Address</span><span className="leave-detail-value">{personalInfo.emailAddress}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Blood Group</span><span className="leave-detail-value">{personalInfo.bloodGroup}</span></div>
-                        <div className="leave-detail-item"><span className="leave-detail-label">Photo Uploaded</span><span className="leave-detail-value">{personalInfo.photo ? 'Yes' : 'No'}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employee Number</span><span className="leave-detail-value">{employeeRecord.employeeNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Full Name</span><span className="leave-detail-value">{employeeRecord.fullName}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">National ID (NIN)</span><span className="leave-detail-value">{employeeRecord.nin}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Gender</span><span className="leave-detail-value">{employeeRecord.gender}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Date of Birth</span><span className="leave-detail-value">{employeeRecord.dob}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Nationality</span><span className="leave-detail-value">{employeeRecord.nationality}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Marital Status</span><span className="leave-detail-value">{employeeRecord.maritalStatus}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Blood Group</span><span className="leave-detail-value">{employeeRecord.bloodGroup}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Photo Uploaded</span><span className="leave-detail-value">{idPhoto ? 'Yes' : 'No'}</span></div>
+                      </div>
+                    </div>
+
+                    {/* Employment Information Summary */}
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Employment Information</h4>
+                      <div className="leave-detail-grid leave-detail-grid--3col">
+                        <div className="leave-detail-item"><span className="leave-detail-label">Department</span><span className="leave-detail-value">{employeeRecord.department}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Designation</span><span className="leave-detail-value">{employeeRecord.designation}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Employment Type</span><span className="leave-detail-value">{employeeRecord.employmentType}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Appointment Date</span><span className="leave-detail-value">{employeeRecord.appointmentDate}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Duty Station</span><span className="leave-detail-value">{employeeRecord.dutyStation}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Region</span><span className="leave-detail-value">{employeeRecord.region}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">District</span><span className="leave-detail-value">{employeeRecord.district}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Position</span><span className="leave-detail-value">{employeeRecord.position}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Territory</span><span className="leave-detail-value">{employeeRecord.territory}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Working Region</span><span className="leave-detail-value">{employeeRecord.workingRegion}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Working Station</span><span className="leave-detail-value">{employeeRecord.workingStation}</span></div>
+                      </div>
+                    </div>
+
+                    {/* Contact & Address Information Summary */}
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">Contact & Address Information</h4>
+                      <div className="leave-detail-grid leave-detail-grid--3col">
+                        <div className="leave-detail-item"><span className="leave-detail-label">Official Email</span><span className="leave-detail-value">{employeeRecord.officialEmail}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Phone Number</span><span className="leave-detail-value">{employeeRecord.phoneNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Mobile Number</span><span className="leave-detail-value">{employeeRecord.mobileNumber}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Ward</span><span className="leave-detail-value">{employeeRecord.ward}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Physical Address</span><span className="leave-detail-value">{employeeRecord.physicalAddress}</span></div>
+                        <div className="leave-detail-item"><span className="leave-detail-label">Postal Address</span><span className="leave-detail-value">{employeeRecord.postalAddress}</span></div>
                       </div>
                     </div>
 
@@ -662,7 +855,7 @@ function StaffIdPage() {
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Declaration</h4>
                       <div className="staffid-declaration">
-                        <p className="staffid-declaration-text">I, <strong>{verifiedEmployee?.fullName || 'the employee'}</strong>, hereby declare that all the information provided in this Staff ID request is true, accurate, and complete to the best of my knowledge. I understand that any false or misleading information may result in the rejection of this request and may subject me to disciplinary action in accordance with the organization's policies and regulations.</p>
+                        <p className="staffid-declaration-text">I, <strong>{employeeRecord?.fullName || 'the employee'}</strong>, hereby declare that all the information provided in this Staff ID request is true, accurate, and complete to the best of my knowledge. I understand that any false or misleading information may result in the rejection of this request and may subject me to disciplinary action in accordance with the organization's policies and regulations.</p>
                         <div className="staffid-declaration-check">
                           <input type="checkbox" id="declare" checked={declared} onChange={e => handleDeclaration(e.target.checked)} />
                           <label htmlFor="declare">I confirm that the information provided in this Staff ID request is correct and belongs to me.</label>
@@ -685,7 +878,7 @@ function StaffIdPage() {
                 <p className="staffid-success-desc">{editingApp ? 'Your corrected Staff ID application has been resubmitted to the Human Resource Office for re-evaluation.' : 'Your Staff ID request has been submitted successfully and is awaiting processing.'}</p>
                 <div className="staffid-success-details">
                   <div className="staffid-success-row"><span className="staffid-success-label">Request Reference</span><span className="staffid-success-value">{requestRef || (editingApp ? editingApp.id : 'SID-2026-005')}</span></div>
-                  <div className="staffid-success-row"><span className="staffid-success-label">Employee Name</span><span className="staffid-success-value">{verifiedEmployee?.fullName}</span></div>
+                  <div className="staffid-success-row"><span className="staffid-success-label">Employee Name</span><span className="staffid-success-value">{employeeRecord?.fullName}</span></div>
                   <div className="staffid-success-row"><span className="staffid-success-label">Request Type</span><span className="staffid-success-value">{requestDetails.idType}</span></div>
                   <div className="staffid-success-row"><span className="staffid-success-label">Submission Date</span><span className="staffid-success-value">{new Date().toISOString().split('T')[0]}</span></div>
                   <div className="staffid-success-row"><span className="staffid-success-label">Current Status</span><span className="staffid-success-value"><span className="status-pill" style={editingApp ? STATUS_STYLE.Resubmitted : STATUS_STYLE.Submitted}>{editingApp ? 'Resubmitted' : 'Submitted'}</span></span></div>

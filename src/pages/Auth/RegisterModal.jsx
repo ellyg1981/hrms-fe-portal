@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { findDemoEmployee } from '../../data/demoEmployees';
 import './RegisterModal.css';
-
-const DEMO_EMPLOYEES = [
-  { employeeId: 1254, employeeNumber: 'EMP-2026-00125', fullName: 'Goodluck E. Msuya', email: 'goodluck.msuya@immigration.go.tz', phoneNumber: '+255754123456', department: 'Immigration Services', designation: 'Immigration Officer', nin: '1990123456789001', checkNumber: 'CHK000123' },
-  { employeeId: 1255, employeeNumber: 'EMP-2026-00126', fullName: 'Steven Mzena', email: 'steven.mzena@immigration.go.tz', phoneNumber: '+255712345678', department: 'Human Resources', designation: 'HR Officer', nin: '1988123456789002', checkNumber: 'CHK000124' },
-  { employeeId: 1256, employeeNumber: 'EMP-2026-00127', fullName: 'John Mkosamali', email: 'john.mkosamali@immigration.go.tz', phoneNumber: '+255723456789', department: 'ICT', designation: 'Systems Analyst', nin: '1992123456789003', checkNumber: 'CHK000125' },
-];
 
 const maskEmail = (email) => {
   const [name, domain] = email.split('@');
@@ -69,10 +64,7 @@ function RegisterModal({ onClose }) {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      const found = DEMO_EMPLOYEES.find(emp =>
-        (nin.trim() && emp.nin === nin.trim()) ||
-        (checkNumber.trim() && emp.checkNumber === checkNumber.trim())
-      );
+      const found = findDemoEmployee({ checkNumber, nin });
       if (!found) {
         setError('No employee record was found using the provided information. Please verify your National ID or Check Number and try again.');
         return;

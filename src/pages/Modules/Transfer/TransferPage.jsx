@@ -9,6 +9,7 @@ import WardSelect from '../../../components/common/location/WardSelect';
 import html2pdf from 'html2pdf.js';
 import { notificationService } from '../../../components/Notifications/notificationService';
 import { openBrandedHtml, openDocument } from '../../../utils/preview';
+import { useAuth } from '../../../context/AuthContext';
 import './TransferPage.css';
 
 const TRANSFER_HISTORY = [
@@ -45,6 +46,7 @@ const TABS = [
 ];
 
 function TransferPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedTransfer, setSelectedTransfer] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -102,10 +104,10 @@ function TransferPage() {
     <div class="doc-subtitle">Reference No: ${row.id} &middot; Status: ${row.status}</div>
     <div class="section-title">Employee Information</div>
     <div class="info-grid">
-      <div class="info-item"><span class="info-label">Full Name:</span><span class="info-value">John Michael Doe</span></div>
-      <div class="info-item"><span class="info-label">Employee ID:</span><span class="info-value">EMP-2024-00542</span></div>
-      <div class="info-item"><span class="info-label">Designation:</span><span class="info-value">Senior HR Officer</span></div>
-      <div class="info-item"><span class="info-label">Department:</span><span class="info-value">Human Resources</span></div>
+      <div class="info-item"><span class="info-label">Full Name:</span><span class="info-value">${user?.fullName || user?.name || 'Employee'}</span></div>
+      <div class="info-item"><span class="info-label">Employee ID:</span><span class="info-value">${user?.employeeNumber || '-'}</span></div>
+      <div class="info-item"><span class="info-label">Designation:</span><span class="info-value">${user?.designation || '-'}</span></div>
+      <div class="info-item"><span class="info-label">Department:</span><span class="info-value">${user?.department || '-'}</span></div>
     </div>
     <div class="section-title">Transfer Details</div>
     <div class="info-grid">
@@ -356,10 +358,10 @@ function TransferPage() {
               <div className="leave-form-section">
                 <h4 className="leave-form-section-title">Basic Information</h4>
                 <div className="leave-form-row">
-                  <div className="form-group"><label className="form-label">Employee Name</label><input type="text" className="form-input" value="John Michael Doe" disabled /></div>
-                  <div className="form-group"><label className="form-label">Employee ID</label><input type="text" className="form-input" value="EMP-2024-00542" disabled /></div>
-                  <div className="form-group"><label className="form-label">Current Department</label><input type="text" className="form-input" value="Human Resources" disabled /></div>
-                  <div className="form-group"><label className="form-label">Current Designation</label><input type="text" className="form-input" value="Senior HR Officer" disabled /></div>
+                  <div className="form-group"><label className="form-label">Employee Name</label><input type="text" className="form-input" value={user?.fullName || user?.name || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Employee ID</label><input type="text" className="form-input" value={user?.employeeNumber || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Current Department</label><input type="text" className="form-input" value={user?.department || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Current Designation</label><input type="text" className="form-input" value={user?.designation || ''} disabled /></div>
                 </div>
               </div>
               <div className="leave-form-section">
@@ -584,10 +586,10 @@ function TransferPage() {
                   <div className="transfer-detail-section">
                     <h5 className="transfer-detail-section-title">Employee Information</h5>
                     <div className="transfer-detail-grid">
-                      <div className="transfer-detail-item"><span className="transfer-detail-label">Full Name</span><span className="transfer-detail-value">John Michael Doe</span></div>
-                      <div className="transfer-detail-item"><span className="transfer-detail-label">Employee ID</span><span className="transfer-detail-value">EMP-2024-00542</span></div>
-                      <div className="transfer-detail-item"><span className="transfer-detail-label">Designation</span><span className="transfer-detail-value">Senior HR Officer</span></div>
-                      <div className="transfer-detail-item"><span className="transfer-detail-label">Department</span><span className="transfer-detail-value">Human Resources</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Full Name</span><span className="transfer-detail-value">{user?.fullName || user?.name || 'Employee'}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Employee ID</span><span className="transfer-detail-value">{user?.employeeNumber || '-'}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Designation</span><span className="transfer-detail-value">{user?.designation || '-'}</span></div>
+                      <div className="transfer-detail-item"><span className="transfer-detail-label">Department</span><span className="transfer-detail-value">{user?.department || '-'}</span></div>
                     </div>
                   </div>
                   <div className="transfer-detail-section">

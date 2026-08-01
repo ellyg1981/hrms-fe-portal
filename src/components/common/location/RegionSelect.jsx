@@ -2,12 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getRegions } from '../../../data/locations';
 import './LocationSelect.css';
 
-function RegionSelect({ value, onChange, disabled, placeholder = 'Select Region', required, id }) {
+function RegionSelect({ value, onChange, territory, disabled, placeholder = 'Select Region', required, id }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef(null);
   const inputRef = useRef(null);
-  const regions = getRegions();
+  const regions = getRegions(territory);
+
+  const isDisabled = disabled || territory === '';
 
   const filtered = search
     ? regions.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
@@ -44,13 +46,13 @@ function RegionSelect({ value, onChange, disabled, placeholder = 'Select Region'
   return (
     <div className="loc-select-wrapper" ref={containerRef}>
       <div
-        className={`loc-select-trigger ${disabled ? 'loc-select-trigger--disabled' : ''} ${open ? 'loc-select-trigger--open' : ''}`}
-        onClick={() => { if (!disabled) setOpen(v => !v); }}
+        className={`loc-select-trigger ${isDisabled ? 'loc-select-trigger--disabled' : ''} ${open ? 'loc-select-trigger--open' : ''}`}
+        onClick={() => { if (!isDisabled) setOpen(v => !v); }}
         id={id}
       >
         <span className={`loc-select-value ${!value ? 'loc-select-placeholder' : ''}`}>{selectedLabel}</span>
         <div className="loc-select-icons">
-          {value && !disabled && (
+          {value && !isDisabled && (
             <button type="button" className="loc-select-clear" onClick={handleClear} aria-label="Clear">×</button>
           )}
           <svg className={`loc-select-chevron ${open ? 'loc-select-chevron--open' : ''}`} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
@@ -71,7 +73,7 @@ function RegionSelect({ value, onChange, disabled, placeholder = 'Select Region'
           </div>
           <div className="loc-select-options">
             {filtered.length === 0 ? (
-              <div className="loc-select-no-results">No regions found</div>
+              <div className="loc-select-no-results">{territory === '' ? 'Select a territory first' : 'No regions found'}</div>
             ) : (
               filtered.map((r) => (
                 <div

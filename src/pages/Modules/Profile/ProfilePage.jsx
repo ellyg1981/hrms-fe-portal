@@ -12,18 +12,20 @@ import LeaveHistoryTab from '../../../components/registration/LeaveHistoryTab';
 import DeclarationTab from '../../../components/registration/DeclarationTab';
 import '../../../components/registration/EmployeeRegistrationModal.css';
 import { notificationService } from '../../../components/Notifications/notificationService';
+import { useAuth } from '../../../context/AuthContext';
+import { searchEmployee } from '../../../services/employeeApi';
 import './ProfilePage.css';
 
 const TABS = [
-  { key: 'search', label: 'Employee Search', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> },
-  { key: 'personal', label: 'Personal Information', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
-  { key: 'education', label: 'Education Information', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10l-10-6-10 6 10 6 10-6z"/><path d="M6 12v5l6 3 6-3v-5"/></svg> },
-  { key: 'dependants', label: 'Dependants', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-  { key: 'nextofkin', label: 'Next of Kin', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
-  { key: 'contact', label: 'Contact Information', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> },
-  { key: 'transferHistory', label: 'Transfer History', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 3h3v3h-3z"/><path d="M8 18h3v3H8z"/><path d="M21 6l-9 9"/><path d="M15 6h6v6"/><path d="M9 18H3v-6"/></svg> },
-  { key: 'leaveHistory', label: 'Leave History', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-  { key: 'declaration', label: 'Declaration', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
+  { key: 'search', label: 'Employee Search', requiresEmployee: false, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> },
+  { key: 'personal', label: 'Personal Information', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+  { key: 'education', label: 'Education Information', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10l-10-6-10 6 10 6 10-6z"/><path d="M6 12v5l6 3 6-3v-5"/></svg> },
+  { key: 'dependants', label: 'Dependants', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+  { key: 'nextofkin', label: 'Next of Kin', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+  { key: 'contact', label: 'Contact Information', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> },
+  { key: 'transferHistory', label: 'Transfer History', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 3h3v3h-3z"/><path d="M8 18h3v3H8z"/><path d="M21 6l-9 9"/><path d="M15 6h6v6"/><path d="M9 18H3v-6"/></svg> },
+  { key: 'leaveHistory', label: 'Leave History', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+  { key: 'declaration', label: 'Declaration', requiresEmployee: true, icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
 ];
 
 const INIT_LOC = { region: '', district: '', ward: '', village: '', street: '', house: '' };
@@ -36,6 +38,7 @@ const blankDep = () => ({ id: makeId(), fullName: '', relationship: '', gender: 
 const blankKin = () => ({ id: makeId(), fullName: '', relationship: '', dateOfBirth: '', gender: '', occupation: '', phone: '', email: '', physicalAddress: '', postalAddress: '' });
 
 function ProfilePage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('search');
   const [employeeVerified, setEmployeeVerified] = useState(false);
   const [verifiedEmployeeId, setVerifiedEmployeeId] = useState('');
@@ -145,7 +148,16 @@ function ProfilePage() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'search': return <EmployeeSearchTab onPopulate={handlePopulate} />;
+      case 'search': return (
+        <EmployeeSearchTab
+          onPopulate={handlePopulate}
+          initialCheckNumber={user?.checkNumber || ''}
+          initialNin={user?.nin || ''}
+          initialForceNumber={user?.forceNumber || ''}
+          readOnly
+          searchFn={searchEmployee}
+        />
+      );
       case 'personal': return <PersonalTab personal={personal} setPersonal={setPersonal} errors={errors} setErrors={setErrors} photo={photo} setPhoto={setPhoto} photoRef={photoRef} />;
       case 'education': return <EducationTab basicEdu={basicEdu} setBasicEdu={setBasicEdu} higherEdu={higherEdu} setHigherEdu={setHigherEdu} profQuals={profQuals} setProfQuals={setProfQuals} />;
       case 'dependants': return <DependantsTab dependants={dependants} setDependants={setDependants} />;

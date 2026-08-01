@@ -2,12 +2,16 @@ import React, { useState, useRef } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
+import TerritorySelect from '../../../components/common/location/TerritorySelect';
 import RegionSelect from '../../../components/common/location/RegionSelect';
 import DistrictSelect from '../../../components/common/location/DistrictSelect';
 import WardSelect from '../../../components/common/location/WardSelect';
+import TrainingProgressTab from './TrainingProgressTab';
 import html2pdf from 'html2pdf.js';
 import { notificationService } from '../../../components/Notifications/notificationService';
 import { openDocument, openBrandedHtml } from '../../../utils/preview';
+import { useAuth } from '../../../context/AuthContext';
+import { DEMO_EMPLOYEES } from '../../../data/demoEmployees';
 import './TrainingPage.css';
 
 const PROGRAMS = [
@@ -207,14 +211,17 @@ const STATUS_STYLE = {
 const TAB_ICONS = {
   available: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
   status: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+  progress: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
 };
 
 const TABS = [
   { key: 'available', label: 'Available Programs' },
   { key: 'status', label: 'Request Status' },
+  { key: 'progress', label: 'Training Progress' },
 ];
 
 function TrainingPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('available');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -233,8 +240,17 @@ function TrainingPage() {
   const [groupTrainingDuration, setGroupTrainingDuration] = useState('');
   const [groupParticipants, setGroupParticipants] = useState([{ name: '', employeeId: '', department: '', designation: '' }]);
   const [selectedProgram, setSelectedProgram] = useState(null);
-  const [trainingVenue, setTrainingVenue] = useState({ region: '', district: '', ward: '' });
-  const [groupTrainingVenue, setGroupTrainingVenue] = useState({ region: '', district: '', ward: '' });
+  const [trainingVenue, setTrainingVenue] = useState({ territory: '', region: '', district: '', ward: '' });
+  const [groupTrainingVenue, setGroupTrainingVenue] = useState({ territory: '', region: '', district: '', ward: '' });
+
+  const handleTrainingSubmit = (e) => {
+    e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      e.currentTarget.reportValidity();
+      return;
+    }
+    notificationService.promise(new Promise(resolve => setTimeout(() => { setShowRequestModal(false); resolve(); }, 1000)), { loading: 'Submitting training request...', success: 'Training request submitted successfully.', error: 'Failed to submit training request.' });
+  };
 
   const handleApplyNow = (program) => {
     setCourseDuration('Short Term');
@@ -436,12 +452,12 @@ function TrainingPage() {
     openBrandedHtml(previewHTML, att.name);
   };
 
-  const EMPLOYEE_LIST = [
-    { name: 'John Michael Doe', employeeId: 'EMP-2024-00542', department: 'Human Resources', designation: 'Senior HR Officer' },
-    { name: 'Jane Sarah Smith', employeeId: 'EMP-2024-00123', department: 'Finance', designation: 'Accountant' },
-    { name: 'Robert James Brown', employeeId: 'EMP-2024-00678', department: 'IT', designation: 'Software Developer' },
-    { name: 'Mary Elizabeth Wilson', employeeId: 'EMP-2024-00987', department: 'Operations', designation: 'Operations Manager' },
-  ];
+  const EMPLOYEE_LIST = DEMO_EMPLOYEES.map(emp => ({
+    name: emp.fullName,
+    employeeId: emp.employeeNumber,
+    department: emp.department,
+    designation: emp.designation,
+  }));
 
   const addGroupParticipant = () => {
     setGroupParticipants(prev => [...prev, { name: '', employeeId: '', department: '', designation: '' }]);
@@ -647,11 +663,11 @@ function TrainingPage() {
             footer={
               <div className="leave-form-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowRequestModal(false)}>Cancel</button>
-                <button type="button" className="btn btn-primary" onClick={() => notificationService.promise(new Promise(resolve => setTimeout(() => { setShowRequestModal(false); resolve(); }, 1000)), { loading: 'Submitting training request...', success: 'Training request submitted successfully.', error: 'Failed to submit training request.' })}>Submit Application</button>
+                <button type="submit" form="trainingRequestForm" className="btn btn-primary">Submit Application</button>
               </div>
             }
           >
-            <form className="leave-form" onSubmit={e => e.preventDefault()}>
+            <form id="trainingRequestForm" className="leave-form" onSubmit={handleTrainingSubmit}>
               <div className="tabs leave-tabs" style={{ marginBottom: 24 }}>
                 <button type="button" className={`tab ${activeFormTab === 'individual' ? 'active' : ''}`} onClick={() => setActiveFormTab('individual')}>
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -668,10 +684,10 @@ function TrainingPage() {
                   <div className="leave-form-section">
                     <h4 className="leave-form-section-title">Applicant Information</h4>
                     <div className="leave-form-row">
-                      <div className="form-group"><label className="form-label">Employee Name</label><input type="text" className="form-input" value="John Michael Doe" disabled /></div>
-                      <div className="form-group"><label className="form-label">Employee ID</label><input type="text" className="form-input" value="EMP-2024-00542" disabled /></div>
-                      <div className="form-group"><label className="form-label">Department</label><input type="text" className="form-input" value="Human Resources" disabled /></div>
-                      <div className="form-group"><label className="form-label">Designation</label><input type="text" className="form-input" value="Senior HR Officer" disabled /></div>
+                      <div className="form-group"><label className="form-label">Employee Name</label><input type="text" className="form-input" value={user?.fullName || user?.name || ''} disabled /></div>
+                      <div className="form-group"><label className="form-label">Employee ID</label><input type="text" className="form-input" value={user?.employeeNumber || ''} disabled /></div>
+                      <div className="form-group"><label className="form-label">Department</label><input type="text" className="form-input" value={user?.department || ''} disabled /></div>
+                      <div className="form-group"><label className="form-label">Designation</label><input type="text" className="form-input" value={user?.designation || ''} disabled /></div>
                     </div>
                   </div>
                   <div className="leave-form-section">
@@ -681,9 +697,10 @@ function TrainingPage() {
                       {(courseDuration === '' || courseDuration === 'Short Term') && (
                         <>
                           <div className="form-group"><label className="form-label">Provider / Organizer</label><input type="text" className="form-input" placeholder="e.g. Training Department" /></div>
-                          <div className="form-group"><label className="form-label">Training Region</label><RegionSelect value={trainingVenue.region} onChange={(val) => setTrainingVenue({ region: val, district: '', ward: '' })} placeholder="Select Region" /></div>
-                          <div className="form-group"><label className="form-label">Training District</label><DistrictSelect value={trainingVenue.district} region={trainingVenue.region} onChange={(val) => setTrainingVenue({ ...trainingVenue, district: val, ward: '' })} placeholder="Select District" /></div>
-                          <div className="form-group"><label className="form-label">Training Ward</label><WardSelect value={trainingVenue.ward} district={trainingVenue.district} onChange={(val) => setTrainingVenue({ ...trainingVenue, ward: val })} placeholder="Select Ward" /></div>
+                          <div className="form-group"><label className="form-label">Territory <span className="reg-required">*</span></label><TerritorySelect value={trainingVenue.territory} onChange={(val) => setTrainingVenue({ territory: val, region: '', district: '', ward: '' })} placeholder="Select Territory" required /></div>
+                          <div className="form-group"><label className="form-label">Training Region <span className="reg-required">*</span></label><RegionSelect value={trainingVenue.region} territory={trainingVenue.territory} onChange={(val) => setTrainingVenue({ ...trainingVenue, region: val, district: '', ward: '' })} placeholder="Select Region" required /></div>
+                          <div className="form-group"><label className="form-label">Training District <span className="reg-required">*</span></label><DistrictSelect value={trainingVenue.district} region={trainingVenue.region} onChange={(val) => setTrainingVenue({ ...trainingVenue, district: val, ward: '' })} placeholder="Select District" required /></div>
+                          <div className="form-group"><label className="form-label">Training Ward <span className="reg-required">*</span></label><WardSelect value={trainingVenue.ward} district={trainingVenue.district} onChange={(val) => setTrainingVenue({ ...trainingVenue, ward: val })} placeholder="Select Ward" required /></div>
                           <div className="form-group"><label className="form-label">Training Type</label><select className="form-input form-select"><option>Internal</option><option>External</option><option>Workshop</option><option>Seminar</option><option>Conference</option></select></div>
                         </>
                       )}
@@ -766,9 +783,10 @@ function TrainingPage() {
                       {(groupCourseDuration === '' || groupCourseDuration === 'Short Term') && (
                         <>
                           <div className="form-group"><label className="form-label">Provider / Organizer</label><input type="text" className="form-input" placeholder="e.g. Training Department" /></div>
-                          <div className="form-group"><label className="form-label">Training Region</label><RegionSelect value={groupTrainingVenue.region} onChange={(val) => setGroupTrainingVenue({ region: val, district: '', ward: '' })} placeholder="Select Region" /></div>
-                          <div className="form-group"><label className="form-label">Training District</label><DistrictSelect value={groupTrainingVenue.district} region={groupTrainingVenue.region} onChange={(val) => setGroupTrainingVenue({ ...groupTrainingVenue, district: val, ward: '' })} placeholder="Select District" /></div>
-                          <div className="form-group"><label className="form-label">Training Ward</label><WardSelect value={groupTrainingVenue.ward} district={groupTrainingVenue.district} onChange={(val) => setGroupTrainingVenue({ ...groupTrainingVenue, ward: val })} placeholder="Select Ward" /></div>
+                          <div className="form-group"><label className="form-label">Territory <span className="reg-required">*</span></label><TerritorySelect value={groupTrainingVenue.territory} onChange={(val) => setGroupTrainingVenue({ territory: val, region: '', district: '', ward: '' })} placeholder="Select Territory" required /></div>
+                          <div className="form-group"><label className="form-label">Training Region <span className="reg-required">*</span></label><RegionSelect value={groupTrainingVenue.region} territory={groupTrainingVenue.territory} onChange={(val) => setGroupTrainingVenue({ ...groupTrainingVenue, region: val, district: '', ward: '' })} placeholder="Select Region" required /></div>
+                          <div className="form-group"><label className="form-label">Training District <span className="reg-required">*</span></label><DistrictSelect value={groupTrainingVenue.district} region={groupTrainingVenue.region} onChange={(val) => setGroupTrainingVenue({ ...groupTrainingVenue, district: val, ward: '' })} placeholder="Select District" required /></div>
+                          <div className="form-group"><label className="form-label">Training Ward <span className="reg-required">*</span></label><WardSelect value={groupTrainingVenue.ward} district={groupTrainingVenue.district} onChange={(val) => setGroupTrainingVenue({ ...groupTrainingVenue, ward: val })} placeholder="Select Ward" required /></div>
                           <div className="form-group"><label className="form-label">Training Type</label><select className="form-input form-select"><option>Internal</option><option>External</option><option>Workshop</option><option>Seminar</option><option>Conference</option></select></div>
                         </>
                       )}
@@ -1069,6 +1087,10 @@ function TrainingPage() {
             )}
           </>
         )}
+
+        {/* Training Progress */}
+        {activeTab === 'progress' && <TrainingProgressTab />}
+
       </main>
     </div>
   );
