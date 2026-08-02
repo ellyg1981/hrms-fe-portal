@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import { openDocument } from '../../../utils/preview';
 import Card from '../../../components/common/Card/Card';
@@ -8,6 +8,7 @@ import RegionSelect from '../../../components/common/location/RegionSelect';
 import DistrictSelect from '../../../components/common/location/DistrictSelect';
 import WardSelect from '../../../components/common/location/WardSelect';
 import { useAuth } from '../../../context/AuthContext';
+import { DEMO_EMPLOYEES } from '../../../data/demoEmployees';
 import uhamiajiLogo from '../../../assets/images/uhamiaji_logo.png';
 import html2pdf from 'html2pdf.js';
 import { notificationService } from '../../../components/Notifications/notificationService';
@@ -61,6 +62,24 @@ const TABS = [
 
 function LikizoPage() {
   const { user } = useAuth();
+
+  const applicant = useMemo(() => {
+    if (!user) return null;
+    if (user.employeeNumber) {
+      const byNumber = DEMO_EMPLOYEES.find(e => e.employeeNumber === user.employeeNumber);
+      if (byNumber) return byNumber;
+    }
+    if (user.email) {
+      const byEmail = DEMO_EMPLOYEES.find(e => e.officialEmail === user.email);
+      if (byEmail) return byEmail;
+    }
+    if (user.username) {
+      const byUsername = DEMO_EMPLOYEES.find(e => e.officialEmail && e.officialEmail.startsWith(`${user.username}@`));
+      if (byUsername) return byUsername;
+    }
+    return null;
+  }, [user]);
+
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedLeave, setSelectedLeave] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -398,14 +417,14 @@ function LikizoPage() {
               <div className="leave-form-section">
                 <h4 className="leave-form-section-title">Basic Information</h4>
                 <div className="leave-form-row">
-                  <div className="form-group"><label className="form-label">Full Name</label><input type="text" className="form-input" value="John Michael Doe" disabled /></div>
-                  <div className="form-group"><label className="form-label">Personal File No.</label><input type="text" className="form-input" value="PF-2024-0542" disabled /></div>
-                  <div className="form-group"><label className="form-label">Check No.</label><input type="text" className="form-input" value="CK-892341" disabled /></div>
-                  <div className="form-group"><label className="form-label">TSD No.</label><input type="text" className="form-input" value="TSD-2024-00123" disabled /></div>
-                  <div className="form-group"><label className="form-label">Designation</label><input type="text" className="form-input" value="Senior HR Officer" disabled /></div>
-                  <div className="form-group"><label className="form-label">Station</label><input type="text" className="form-input" value="Dodoma HQ" disabled /></div>
-                  <div className="form-group"><label className="form-label">Division / Department</label><input type="text" className="form-input" value="Human Resources" disabled /></div>
-                  <div className="form-group"><label className="form-label">Date of First Appointment</label><input type="date" className="form-input" value="2018-03-15" disabled /></div>
+                  <div className="form-group"><label className="form-label">Full Name</label><input type="text" className="form-input" value={(applicant && applicant.fullName) || user?.fullName || user?.name || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Personal File No.</label><input type="text" className="form-input" value={(applicant && applicant.employeeNumber) || user?.employeeNumber || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Check No.</label><input type="text" className="form-input" value={(applicant && applicant.checkNumber) || user?.checkNumber || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">TSD No.</label><input type="text" className="form-input" value={(applicant && applicant.forceNumber) || user?.forceNumber || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Designation</label><input type="text" className="form-input" value={(applicant && applicant.designation) || user?.designation || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Station</label><input type="text" className="form-input" value={(applicant && applicant.workingStation) || user?.workingStation || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Division / Department</label><input type="text" className="form-input" value={(applicant && applicant.department) || user?.department || ''} disabled /></div>
+                  <div className="form-group"><label className="form-label">Date of First Appointment</label><input type="date" className="form-input" value={(applicant && applicant.dateOfFirstAppointment) || user?.dateOfFirstAppointment || ''} disabled /></div>
                 </div>
               </div>
               <div className="leave-form-section">

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
@@ -222,6 +222,24 @@ const TABS = [
 
 function TrainingPage() {
   const { user } = useAuth();
+
+  const applicant = useMemo(() => {
+    if (!user) return null;
+    if (user.employeeNumber) {
+      const byNumber = DEMO_EMPLOYEES.find(e => e.employeeNumber === user.employeeNumber);
+      if (byNumber) return byNumber;
+    }
+    if (user.email) {
+      const byEmail = DEMO_EMPLOYEES.find(e => e.officialEmail === user.email);
+      if (byEmail) return byEmail;
+    }
+    if (user.username) {
+      const byUsername = DEMO_EMPLOYEES.find(e => e.officialEmail && e.officialEmail.startsWith(`${user.username}@`));
+      if (byUsername) return byUsername;
+    }
+    return null;
+  }, [user]);
+
   const [activeTab, setActiveTab] = useState('available');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -684,10 +702,10 @@ function TrainingPage() {
                   <div className="leave-form-section">
                     <h4 className="leave-form-section-title">Applicant Information</h4>
                     <div className="leave-form-row">
-                      <div className="form-group"><label className="form-label">Employee Name</label><input type="text" className="form-input" value={user?.fullName || user?.name || ''} disabled /></div>
-                      <div className="form-group"><label className="form-label">Employee ID</label><input type="text" className="form-input" value={user?.employeeNumber || ''} disabled /></div>
-                      <div className="form-group"><label className="form-label">Department</label><input type="text" className="form-input" value={user?.department || ''} disabled /></div>
-                      <div className="form-group"><label className="form-label">Designation</label><input type="text" className="form-input" value={user?.designation || ''} disabled /></div>
+                      <div className="form-group"><label className="form-label">Employee Name</label><input type="text" className="form-input" value={(applicant && applicant.fullName) || user?.fullName || user?.name || ''} disabled /></div>
+                      <div className="form-group"><label className="form-label">Employee ID</label><input type="text" className="form-input" value={(applicant && applicant.employeeNumber) || user?.employeeNumber || ''} disabled /></div>
+                      <div className="form-group"><label className="form-label">Department</label><input type="text" className="form-input" value={(applicant && applicant.department) || user?.department || ''} disabled /></div>
+                      <div className="form-group"><label className="form-label">Designation</label><input type="text" className="form-input" value={(applicant && applicant.designation) || user?.designation || ''} disabled /></div>
                     </div>
                   </div>
                   <div className="leave-form-section">
