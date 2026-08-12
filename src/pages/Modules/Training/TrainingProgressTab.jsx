@@ -259,13 +259,6 @@ function TrainingProgressTab() {
 
   return (
     <>
-      <div className="leave-section-header">
-        <div>
-          <h3 className="leave-section-title">Training Progress</h3>
-          <p className="leave-section-desc">Submit periodic progress updates for approved training programs</p>
-        </div>
-      </div>
-
       <DataTable
         columns={columns}
         data={approvedTraining}

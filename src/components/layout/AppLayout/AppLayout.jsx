@@ -4,7 +4,6 @@ import { useAuth } from '../../../context/AuthContext';
 import Modal from '../../common/Modal/Modal';
 import Sidebar from '../Sidebar/Sidebar';
 import Header from '../Header/Header';
-import { notificationService } from '../../../components/Notifications/notificationService';
 import './AppLayout.css';
 
 function AppLayout({ children, title, subtitle, headerRight }) {
@@ -56,9 +55,8 @@ function AppLayout({ children, title, subtitle, headerRight }) {
     setShowSignOutConfirm(true);
   };
 
-  const confirmLogout = () => {
-    notificationService.success('You have been logged out successfully.');
-    logout();
+  const confirmLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

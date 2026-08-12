@@ -6,6 +6,8 @@ import coatOfArms from '../../assets/images/coat_of_arms.png';
 import uhamiajiLogo from '../../assets/images/uhamiaji_logo.png';
 import bgImage from '../../assets/images/hq_dodoma.jpg';
 import { notificationService } from '../../components/Notifications/notificationService';
+import Modal from '../../components/common/Modal/Modal';
+import { getLoginTestUsers } from '../../services/authApi';
 import './LoginPage.css';
 
 const SLIDES = [
@@ -48,7 +50,7 @@ function LoginPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (evt) => {
+  const handleSubmit = async (evt) => {
     evt.preventDefault();
     if (!validate()) {
       notificationService.warning('Please correct the highlighted fields before submitting.');
@@ -56,24 +58,36 @@ function LoginPage() {
     }
     setLoading(true);
     setLoginError('');
-    notificationService.promise(
-      new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            resolve(login(form.username.trim().toLowerCase(), form.password, form.rememberMe));
-          } catch (err) {
-            reject(err);
-          }
-        }, 800);
-      }),
-      { loading: 'Logging in...', success: (user) => `Login successful. Welcome back, ${user?.name || 'User'}.`, error: (err) => err.message || 'Invalid username or password.' }
-    )
-      .then(() => { setLoading(false); navigate('/dashboard', { replace: true }); })
-      .catch((err) => { setLoading(false); setLoginError(err.message || 'Invalid username or password'); });
+    try {
+      await notificationService.promise(
+        login(form.username.trim().toLowerCase(), form.password, form.rememberMe),
+        {
+          loading: 'Logging in...',
+          success: (u) => `Login successful. Welcome back, ${u?.name || u?.fullName || 'User'}.`,
+          error: (err) => err.message || 'Invalid username or password.',
+        }
+      );
+    } catch (err) {
+      setLoginError(err.message || 'Invalid username or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openModal = (name) => setModal(name);
   const closeModal = () => setModal(null);
+  const testUsers = getLoginTestUsers();
+
+  const handleSelectUser = (selectedUser) => {
+    setForm(prev => ({
+      ...prev,
+      username: selectedUser.username || selectedUser.email?.split('@')[0] || '',
+      password: selectedUser.password || '',
+    }));
+    setErrors({});
+    setLoginError('');
+    closeModal();
+  };
 
   return (
     <div className="login-page">
@@ -95,6 +109,12 @@ function LoginPage() {
               <button key={idx} className={`login-dot ${idx === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(idx)} aria-label={`Go to slide ${idx + 1}`} />
             ))}
           </div>
+          {testUsers.length > 0 && (
+            <button type="button" className="login-users-trigger" onClick={() => openModal('users')}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Users
+            </button>
+          )}
         </div>
 
         <div className="login-right">
@@ -153,6 +173,8 @@ function LoginPage() {
       {modal === 'reset' && <ResetPasswordModal onClose={closeModal} />}
       {/* Register Modal */}
       {modal === 'register' && <RegisterModal onClose={closeModal} />}
+      {/* Users Modal */}
+      {modal === 'users' && <UsersModal users={testUsers} onClose={closeModal} onSelect={handleSelectUser} />}
     </div>
   );
 }
@@ -232,6 +254,26 @@ function ResetPasswordModal({ onClose }) {
         )}
       </div>
     </div>
+  );
+}
+
+function UsersModal({ users, onClose, onSelect }) {
+  return (
+    <Modal isOpen onClose={onClose} title="Available Users" size="lg">
+      <div className="login-users-list" role="list">
+        {users.map((user, i) => (
+          <div key={user.userId || user.username || i} className="login-users-item" role="listitem">
+            <div className="login-users-info">
+              <span className="login-users-name">{user.fullName}</span>
+              <span className="login-users-meta">{user.email}</span>
+            </div>
+            <button type="button" className="btn btn-primary login-users-select" onClick={() => onSelect(user)}>
+              Select User
+            </button>
+          </div>
+        ))}
+      </div>
+    </Modal>
   );
 }
 

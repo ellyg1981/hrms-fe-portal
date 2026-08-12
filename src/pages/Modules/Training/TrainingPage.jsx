@@ -635,9 +635,6 @@ function TrainingPage() {
         {/* Available Programs */}
         {activeTab === 'available' && (
           <>
-            <div className="leave-section-header">
-              <div><h3 className="leave-section-title">Available Programs</h3><p className="leave-section-desc">Browse and apply for professional development programs</p></div>
-            </div>
             <div className="leave-doc-grid leave-doc-grid--3">
               {PROGRAMS.map(p => (
                 <div key={p.id} className="leave-doc-card training-program-card">

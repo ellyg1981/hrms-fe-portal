@@ -158,7 +158,7 @@ function ProfilePage() {
           searchFn={searchEmployee}
         />
       );
-      case 'personal': return <PersonalTab personal={personal} setPersonal={setPersonal} errors={errors} setErrors={setErrors} photo={photo} setPhoto={setPhoto} photoRef={photoRef} />;
+      case 'personal': return <PersonalTab personal={personal} setPersonal={setPersonal} errors={errors} setErrors={setErrors} photo={photo} setPhoto={setPhoto} photoRef={photoRef} variant="profile" />;
       case 'education': return <EducationTab basicEdu={basicEdu} setBasicEdu={setBasicEdu} higherEdu={higherEdu} setHigherEdu={setHigherEdu} profQuals={profQuals} setProfQuals={setProfQuals} />;
       case 'dependants': return <DependantsTab dependants={dependants} setDependants={setDependants} />;
       case 'nextofkin': return <NextOfKinTab nextOfKin={nextOfKin} setNextOfKin={setNextOfKin} />;

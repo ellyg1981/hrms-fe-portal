@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
@@ -92,7 +92,7 @@ const TABS = [
   { key: 'status', label: 'Request Status' },
 ];
 
-const STEPS = ['Employee Verification', 'Personal Information', 'Request New ID', 'Declaration'];
+const STEPS = ['Employee Verification', 'Personal Information', 'Request New ID', 'ID Preview', 'Declaration'];
 
 function StaffIdPage() {
   const { user } = useAuth();
@@ -141,7 +141,41 @@ function StaffIdPage() {
   const [submitted, setSubmitted] = useState(false);
   const [requestRef, setRequestRef] = useState('');
   const [idQrCode, setIdQrCode] = useState('');
+  const [previewQrCode, setPreviewQrCode] = useState('');
   const idCardRef = useRef(null);
+
+  const getIdCardData = (data = {}) => {
+    const fullName = data.fullName || ID_CARD.name || '';
+    const nameParts = fullName.trim().split(/\s+/);
+    const surname = data.surname || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
+    const givenNames = data.givenNames || (nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : fullName);
+    return {
+      fullName,
+      employeeNumber: data.employeeNumber || ID_CARD.employeeNo,
+      staffIdNumber: data.staffIdNumber || data.id || ID_CARD.staffIdNumber,
+      givenNames,
+      surname,
+      sex: data.sex || data.gender || ID_CARD.sex,
+      rank: data.rank || data.designation || ID_CARD.rank,
+      bloodGroup: data.bloodGroup || ID_CARD.bloodGroup,
+      photo: data.photo || defaultUserPhoto,
+    };
+  };
+
+  const getPreviewData = useCallback(() => {
+    const fullName = employeeRecord.fullName || editingApp?.fullName || ID_CARD.name || '';
+    return {
+      ...employeeRecord,
+      id: editingApp?.staffIdNumber || editingApp?.id || requestRef || 'PREVIEW',
+      fullName,
+      givenNames: employeeRecord.givenNames || editingApp?.givenNames || '',
+      surname: employeeRecord.surname || editingApp?.surname || '',
+      sex: employeeRecord.gender || editingApp?.sex || '',
+      rank: employeeRecord.designation || editingApp?.rank || editingApp?.designation || '',
+      bloodGroup: employeeRecord.bloodGroup || editingApp?.bloodGroup || '',
+      photo: idPhoto || employeeRecord.photo || editingApp?.photo || defaultUserPhoto,
+    };
+  }, [employeeRecord, idPhoto, editingApp, requestRef]);
 
   useEffect(() => {
     if (!selectedApp) return;
@@ -153,6 +187,16 @@ function StaffIdPage() {
       .then(url => setIdQrCode(url))
       .catch(() => setIdQrCode(''));
   }, [selectedApp]);
+
+  useEffect(() => {
+    const data = getPreviewData();
+    const employeeNo = data.employeeNumber || ID_CARD.employeeNo;
+    const staffIdNumber = data.staffIdNumber || data.id || ID_CARD.staffIdNumber;
+    const payload = `${employeeNo}\nID${staffIdNumber}\n${data.fullName || ''}`;
+    QRCode.toDataURL(payload, { width: 130, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+      .then(url => setPreviewQrCode(url))
+      .catch(() => setPreviewQrCode(''));
+  }, [getPreviewData]);
 
   const openApp = (app) => { setSelectedApp(app); setModalTab('info'); };
 
@@ -207,6 +251,7 @@ function StaffIdPage() {
     setVerifyError('');
     setRequestDetails({ idType: 'New Staff ID', comments: '', supportingDoc: null });
     setDeclarationTimestamp(null);
+    setPreviewQrCode('');
   };
 
   const openNewRequest = () => {
@@ -222,6 +267,7 @@ function StaffIdPage() {
     setVerifyError('');
     setRequestDetails({ idType: 'New Staff ID', comments: '', supportingDoc: null });
     setDeclarationTimestamp(null);
+    setPreviewQrCode('');
   };
 
   const mapEmployeeToRecord = (emp) => ({
@@ -322,24 +368,6 @@ function StaffIdPage() {
     return `SID-${year}-0${num}`;
   };
 
-  const getIdCardData = (data = {}) => {
-    const fullName = data.fullName || ID_CARD.name || '';
-    const nameParts = fullName.trim().split(/\s+/);
-    const surname = data.surname || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
-    const givenNames = data.givenNames || (nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : fullName);
-    return {
-      fullName,
-      employeeNumber: data.employeeNumber || ID_CARD.employeeNo,
-      staffIdNumber: data.staffIdNumber || data.id || ID_CARD.staffIdNumber,
-      givenNames,
-      surname,
-      sex: data.sex || data.gender || ID_CARD.sex,
-      rank: data.rank || data.designation || ID_CARD.rank,
-      bloodGroup: data.bloodGroup || ID_CARD.bloodGroup,
-      photo: data.photo || defaultUserPhoto,
-    };
-  };
-
   const renderIdCardFront = (data, qrCode, cardRef) => {
     const d = getIdCardData(data);
     return (
@@ -383,12 +411,14 @@ function StaffIdPage() {
     );
   };
 
+  const getCurrentAppId = () => selectedApp?.id || editingApp?.id || requestRef || 'staff-id';
+
   const handleDownloadPng = async () => {
     if (!idCardRef.current) return;
     try {
       const canvas = await html2canvas(idCardRef.current, { scale: 2, useCORS: true, backgroundColor: null });
       const link = document.createElement('a');
-      link.download = `${selectedApp?.id || 'staff-id'}-staff-id.png`;
+      link.download = `${getCurrentAppId()}-staff-id.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
@@ -403,7 +433,7 @@ function StaffIdPage() {
       const dataUrl = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ unit: 'mm', format: [85.6, 53.98], orientation: 'landscape' });
       pdf.addImage(dataUrl, 'PNG', 0, 0, 85.6, 53.98, undefined, 'FAST');
-      pdf.save(`${selectedApp?.id || 'staff-id'}-staff-id.pdf`);
+      pdf.save(`${getCurrentAppId()}-staff-id.pdf`);
     } catch (err) {
       notificationService.error('Failed to download PDF.');
     }
@@ -414,9 +444,10 @@ function StaffIdPage() {
     try {
       const canvas = await html2canvas(idCardRef.current, { scale: 2, useCORS: true, backgroundColor: null });
       const dataUrl = canvas.toDataURL('image/png');
+      const currentId = getCurrentAppId();
       const win = openBrandedHtml(`
         <html>
-          <head><title>Print Staff ID - ${selectedApp?.id || ''}</title>
+          <head><title>Print Staff ID - ${currentId}</title>
             <style>
               body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f5f7fa; }
               img { max-width: 100%; max-height: 100vh; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
@@ -426,7 +457,7 @@ function StaffIdPage() {
             <img src="${dataUrl}" alt="Staff ID" onload="setTimeout(function(){ window.print(); }, 300);" />
           </body>
         </html>
-      `, `Print Staff ID - ${selectedApp?.id || ''}`);
+      `, `Print Staff ID - ${currentId}`);
       if (!win) {
         notificationService.info('Please allow popups to print.');
         return;
@@ -447,12 +478,24 @@ function StaffIdPage() {
           onCta={openNewRequest}
         />
 
-        <div className="reg-tabs">
-          {TABS.map(tab => (
-            <button key={tab.key} className={`reg-tab ${activeTab === tab.key ? 'active' : ''}`} onClick={() => { setActiveTab(tab.key); setStep(1); setSubmitted(false); }}>
-              {TAB_ICONS[tab.key]}{tab.label}
-            </button>
-          ))}
+        <div className="staffid-tabs-row">
+          <div className="reg-tabs">
+            {TABS.map(tab => (
+              <button key={tab.key} className={`reg-tab ${activeTab === tab.key ? 'active' : ''}`} onClick={() => { setActiveTab(tab.key); setStep(1); setSubmitted(false); }}>
+                {TAB_ICONS[tab.key]}{tab.label}
+              </button>
+            ))}
+          </div>
+          {activeTab === 'status' && (
+            <div className="staffid-tracker-selector staffid-tabs-tracker">
+              <label className="form-label" htmlFor="trackingAppSelect">Select Application</label>
+              <select id="trackingAppSelect" className="form-input form-select" value={trackingApp?.id || ''} onChange={e => setTrackingApp(APPLICATIONS.find(a => a.id === e.target.value) || null)}>
+                {APPLICATIONS.map(app => (
+                  <option key={app.id} value={app.id}>{app.id} — {app.type} ({app.status})</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Request Staff ID Modal */}
@@ -478,11 +521,16 @@ function StaffIdPage() {
                 ) : step === 3 ? (
                   <div className="leave-form-actions">
                     <button className="btn btn-secondary" onClick={() => setStep(2)}>Previous</button>
-                    <button className="btn btn-primary" onClick={() => setStep(4)}>Next: Declaration</button>
+                    <button className="btn btn-primary" onClick={() => setStep(4)}>Next: ID Preview</button>
                   </div>
                 ) : step === 4 ? (
                   <div className="leave-form-actions">
                     <button className="btn btn-secondary" onClick={() => setStep(3)}>Previous</button>
+                    <button className="btn btn-primary" onClick={() => setStep(5)}>Next: Declaration</button>
+                  </div>
+                ) : step === 5 ? (
+                  <div className="leave-form-actions">
+                    <button className="btn btn-secondary" onClick={() => setStep(4)}>Previous</button>
                     <button className="btn btn-primary" disabled={!declared} onClick={() => { setRequestRef(generateRefNumber()); setSubmitted(true); }}>Submit Request</button>
                   </div>
                 ) : null
@@ -777,6 +825,25 @@ function StaffIdPage() {
 
                 {step === 4 && (
                   <>
+                    <div className="leave-form-section">
+                      <h4 className="leave-form-section-title">ID Preview</h4>
+                      <p className="leave-section-desc" style={{ marginBottom: 16 }}>Preview your Staff ID before submission. This is the same card design used in Application Details and will be printed once the request is approved.</p>
+                      <div className="id-card-preview-wrap">
+                        <div className="staffid-id-card-wrapper">
+                          {renderIdCardFront(getPreviewData(), previewQrCode, idCardRef)}
+                        </div>
+                        <div className="staffid-id-actions">
+                          <button className="btn btn-primary" onClick={handleDownloadPng}>Download Image</button>
+                          <button className="btn btn-primary" onClick={handleDownloadPdf}>Download PDF</button>
+                          <button className="btn btn-secondary" onClick={handlePrintPreview}>Print Preview</button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {step === 5 && (
+                  <>
                     {/* Employee Verification Summary */}
                     <div className="leave-form-section">
                       <h4 className="leave-form-section-title">Employee Verification</h4>
@@ -890,7 +957,6 @@ function StaffIdPage() {
 
         {activeTab === 'my' && (
           <>
-            <div className="leave-section-header"><div><h3 className="leave-section-title">My Applications</h3><p className="leave-section-desc">Track and manage all your Staff ID applications</p></div></div>
             <DataTable
               columns={[
                 { key: 'id', header: 'Application No', render: row => <span className="id-badge">{row.id}</span> },
@@ -919,17 +985,6 @@ function StaffIdPage() {
 
         {activeTab === 'status' && (
           <>
-            <div className="leave-section-header"><div><h3 className="leave-section-title">Request Status</h3><p className="leave-section-desc">Track application progress, HR responses, and processing stages</p></div></div>
-
-            <div className="staffid-tracker-selector">
-              <label className="form-label">Select Application</label>
-              <select className="form-input form-select" value={trackingApp?.id || ''} onChange={e => setTrackingApp(APPLICATIONS.find(a => a.id === e.target.value) || null)}>
-                {APPLICATIONS.map(app => (
-                  <option key={app.id} value={app.id}>{app.id} — {app.type} ({app.status})</option>
-                ))}
-              </select>
-            </div>
-
             {trackingApp && (
               <>
                 <div className="staffid-status-card">

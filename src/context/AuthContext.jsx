@@ -1,103 +1,316 @@
-import React, { createContext, useContext, useState } from 'react';
-import { DEMO_EMPLOYEES } from '../data/demoEmployees';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
+import * as authApi from '../services/authApi';
+import {
+  SESSION_INACTIVITY_TIMEOUT,
+  SESSION_WARNING_TIME,
+} from '../config/api';
+import { notificationService } from '../components/Notifications/notificationService';
+import SessionTimeoutModal from '../components/SessionTimeoutModal/SessionTimeoutModal';
 
 const AuthContext = createContext(null);
 
-function employeeToUser(emp) {
-  const username = emp.officialEmail ? emp.officialEmail.split('@')[0] : '';
-  return {
-    username,
-    password: 'Uhamiaji@123',
-    name: `${emp.firstName} ${emp.lastName}`,
-    role: 'staff',
-    email: emp.officialEmail,
-    employeeId: emp.employeeId,
-    employeeNumber: emp.employeeNumber,
-    checkNumber: emp.checkNumber,
-    forceNumber: emp.forceNumber,
-    nin: emp.nin,
-    fullName: emp.fullName,
-    firstName: emp.firstName,
-    lastName: emp.lastName,
-    gender: emp.gender,
-    dob: emp.dob,
-    nationality: emp.nationality,
-    maritalStatus: emp.maritalStatus,
-    department: emp.department,
-    designation: emp.designation,
-    position: emp.position,
-    employmentType: emp.employmentType,
-    territory: emp.territory,
-    workingRegion: emp.workingRegion,
-    workingStation: emp.workingStation,
-    region: emp.region,
-    district: emp.district,
-    ward: emp.ward,
-    physicalAddress: emp.physicalAddress,
-    postalAddress: emp.postalAddress,
-    bloodGroup: emp.bloodGroup,
-    phone: emp.phoneNumber || emp.mobile || '',
-    phoneNumber: emp.phoneNumber || emp.mobile || '',
-    mobileNumber: emp.mobileNumber || emp.mobile || '',
-    officialEmail: emp.officialEmail,
-  };
-}
-
-export const DEMO_USERS = DEMO_EMPLOYEES.map(employeeToUser);
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const local = localStorage.getItem('hrms_user');
-    if (local) return JSON.parse(local);
-    const session = sessionStorage.getItem('hrms_user_session');
-    if (session) return JSON.parse(session);
-    return null;
-  });
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const [permissions, setPermissions] = useState(null);
+  const [roles, setRoles] = useState([]);
+  const [sessionExpiry, setSessionExpiry] = useState(null);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningSeconds, setWarningSeconds] = useState(0);
 
-  const login = (username, password, rememberMe = false) => {
-    const found = DEMO_USERS.find(u => u.username === username);
-    if (!found || found.password !== password) {
-      throw new Error('Invalid username or password');
+  const inactivityWarningTimer = useRef(null);
+  const inactivityLogoutTimer = useRef(null);
+  const hardExpiryWarningTimer = useRef(null);
+  const hardExpiryTimer = useRef(null);
+  const warningCountdown = useRef(null);
+
+  /* ── Helpers ── */
+
+  const clearTimers = useCallback(() => {
+    [inactivityWarningTimer, inactivityLogoutTimer, hardExpiryWarningTimer, hardExpiryTimer].forEach(
+      (ref) => {
+        if (ref.current) {
+          clearTimeout(ref.current);
+          ref.current = null;
+        }
+      }
+    );
+    if (warningCountdown.current) {
+      clearInterval(warningCountdown.current);
+      warningCountdown.current = null;
     }
-    const userData = {
-      name: found.name,
-      username: found.username,
-      email: found.email,
-      role: found.role,
-      employeeNumber: found.employeeNumber || '',
-      checkNumber: found.checkNumber || '',
-      forceNumber: found.forceNumber || '',
-      nin: found.nin || '',
-      fullName: found.fullName || found.name || '',
-      department: found.department || '',
-      designation: found.designation || '',
-      territory: found.territory || '',
-      workingRegion: found.workingRegion || '',
-      workingStation: found.workingStation || '',
-      bloodGroup: found.bloodGroup || '',
-      phone: found.phone || '',
-      officialEmail: found.officialEmail || found.email || '',
-    };
-    setUser(userData);
-    if (rememberMe) {
-      localStorage.setItem('hrms_user', JSON.stringify(userData));
-      sessionStorage.removeItem('hrms_user_session');
+  }, []);
+
+  const startWarningCountdown = useCallback(() => {
+    setWarningSeconds(Math.floor(SESSION_WARNING_TIME / 1000));
+    if (warningCountdown.current) clearInterval(warningCountdown.current);
+    warningCountdown.current = setInterval(() => {
+      setWarningSeconds((prev) => {
+        if (prev <= 1) {
+          if (warningCountdown.current) {
+            clearInterval(warningCountdown.current);
+            warningCountdown.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  const stopWarningCountdown = useCallback(() => {
+    if (warningCountdown.current) {
+      clearInterval(warningCountdown.current);
+      warningCountdown.current = null;
+    }
+    setShowWarning(false);
+    setWarningSeconds(0);
+  }, []);
+
+  /* ── Session actions ── */
+
+  const logout = useCallback(async ({ silent = false, redirect = false } = {}) => {
+    clearTimers();
+    stopWarningCountdown();
+    if (!silent) {
+      try {
+        await authApi.logout();
+      } catch (err) {
+        // Even if the API call fails, the client session must be cleared.
+      }
     } else {
-      sessionStorage.setItem('hrms_user_session', JSON.stringify(userData));
-      localStorage.removeItem('hrms_user');
+      authApi.clearAuthStorage();
     }
-    return userData;
-  };
-
-  const logout = () => {
     setUser(null);
-    localStorage.removeItem('hrms_user');
-    sessionStorage.removeItem('hrms_user_session');
+    setPermissions(null);
+    setRoles([]);
+    setSessionExpiry(null);
+    setIsAuthenticated(false);
+    if (redirect) {
+      window.location.replace('/login');
+    }
+  }, [clearTimers, stopWarningCountdown]);
+
+  const resetInactivityTimer = useCallback(() => {
+    if (!isAuthenticated) return;
+    if (inactivityWarningTimer.current) clearTimeout(inactivityWarningTimer.current);
+    if (inactivityLogoutTimer.current) clearTimeout(inactivityLogoutTimer.current);
+
+    const warningAt = SESSION_INACTIVITY_TIMEOUT - SESSION_WARNING_TIME;
+    const logoutAt = SESSION_INACTIVITY_TIMEOUT;
+
+    inactivityWarningTimer.current = setTimeout(() => {
+      setShowWarning(true);
+      startWarningCountdown();
+    }, warningAt);
+
+    inactivityLogoutTimer.current = setTimeout(() => {
+      stopWarningCountdown();
+      notificationService.error('Your session has expired. Please log in again.');
+      logout({ silent: true, redirect: true });
+    }, logoutAt);
+  }, [isAuthenticated, logout, startWarningCountdown, stopWarningCountdown]);
+
+  const resetHardExpiryTimers = useCallback(() => {
+    if (!isAuthenticated || !sessionExpiry) return;
+    if (hardExpiryWarningTimer.current) clearTimeout(hardExpiryWarningTimer.current);
+    if (hardExpiryTimer.current) clearTimeout(hardExpiryTimer.current);
+
+    const now = Date.now();
+    const timeToExpiry = sessionExpiry - now;
+
+    if (timeToExpiry <= 0) {
+      logout({ silent: true, redirect: true });
+      return;
+    }
+
+    const warningAt = timeToExpiry - SESSION_WARNING_TIME;
+
+    if (warningAt > 0) {
+      hardExpiryWarningTimer.current = setTimeout(() => {
+        setShowWarning(true);
+        startWarningCountdown();
+      }, warningAt);
+    } else {
+      setShowWarning(true);
+      startWarningCountdown();
+    }
+
+    hardExpiryTimer.current = setTimeout(() => {
+      stopWarningCountdown();
+      notificationService.error('Your session has expired. Please log in again.');
+      logout({ silent: true, redirect: true });
+    }, timeToExpiry);
+  }, [isAuthenticated, sessionExpiry, logout, startWarningCountdown, stopWarningCountdown]);
+
+  /* ── Core auth actions ── */
+
+  const login = useCallback(async (username, password, rememberMe = false) => {
+    setIsLoading(true);
+    try {
+      const result = await authApi.login({ username, password, rememberMe });
+      setUser(result.user);
+      setPermissions(result.permissions);
+      setRoles(result.user.roles || [result.user.role]);
+      setSessionExpiry(result.expiresAt);
+      setIsAuthenticated(true);
+      return result.user;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const refreshSession = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await authApi.refreshSession();
+      setSessionExpiry(result.expiresAt);
+      stopWarningCountdown();
+      resetInactivityTimer();
+      resetHardExpiryTimers();
+      notificationService.success('Session extended successfully.');
+    } catch (err) {
+      if (!err?.silent && err?.code !== 'UNAUTHORIZED') {
+        notificationService.error(err.message || 'Unable to refresh session. Please log in again.');
+      }
+      await logout({ silent: true, redirect: true });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [logout, resetInactivityTimer, resetHardExpiryTimers, stopWarningCountdown]);
+
+  const can = useCallback(
+    (module, action = 'view') => {
+      if (!permissions) return false;
+      const perms = permissions[module];
+      return !!perms && !!perms[action];
+    },
+    [permissions]
+  );
+
+  const hasRole = useCallback(
+    (role) => {
+      if (!role || !roles?.length) return false;
+      return roles.some((r) => String(r).toLowerCase() === String(role).toLowerCase());
+    },
+    [roles]
+  );
+
+  /* ── Initialization: restore session on app start ── */
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function init() {
+      try {
+        const session = await authApi.verifySession();
+        if (mounted) {
+          if (session) {
+            setUser(session.user);
+            setPermissions(session.permissions);
+            setRoles(session.user?.roles || [session.user?.role]);
+            setSessionExpiry(session.expiresAt);
+            setIsAuthenticated(true);
+          } else {
+            setIsAuthenticated(false);
+          }
+        }
+      } catch (err) {
+        if (mounted) {
+          authApi.clearAuthStorage();
+          setIsAuthenticated(false);
+        }
+      } finally {
+        if (mounted) setIsInitializing(false);
+      }
+    }
+
+    init();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  /* ── Global unauthorized listener (e.g. from API client) ── */
+
+  useEffect(() => {
+    function handle(e) {
+      notificationService.error(e.detail?.message || 'Your session has expired. Please log in again.');
+      logout({ silent: true, redirect: true });
+    }
+    window.addEventListener('hrms:unauthorized', handle);
+    return () => window.removeEventListener('hrms:unauthorized', handle);
+  }, [logout]);
+
+  /* ── Inactivity tracking ── */
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      clearTimers();
+      return;
+    }
+
+    const activityEvents = ['mousedown', 'keydown', 'touchstart', 'wheel', 'click'];
+    const handleActivity = () => resetInactivityTimer();
+
+    activityEvents.forEach((event) => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
+
+    resetInactivityTimer();
+    resetHardExpiryTimers();
+
+    return () => {
+      activityEvents.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
+    };
+  }, [isAuthenticated, resetInactivityTimer, resetHardExpiryTimers, clearTimers]);
+
+  /* ── Cleanup on unmount ── */
+
+  useEffect(() => {
+    return () => {
+      clearTimers();
+      stopWarningCountdown();
+    };
+  }, [clearTimers, stopWarningCountdown]);
+
+  const value = {
+    isInitializing,
+    isLoading,
+    isAuthenticated,
+    user,
+    permissions,
+    roles,
+    sessionExpiry,
+    login,
+    logout,
+    refreshSession,
+    can,
+    hasRole,
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
+      {!isInitializing && isAuthenticated && (
+        <SessionTimeoutModal
+          isOpen={showWarning}
+          onContinue={refreshSession}
+          onLogout={() => logout({ silent: true, redirect: true })}
+          timeLeftSeconds={warningSeconds}
+        />
+      )}
     </AuthContext.Provider>
   );
 }

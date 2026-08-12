@@ -1,57 +1,12 @@
 import { notificationService } from '../components/Notifications/notificationService';
 import { DEMO_EMPLOYEES, findDemoEmployee } from '../data/demoEmployees';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
-const EMPLOYEE_ME_ENDPOINT = process.env.REACT_APP_EMPLOYEE_ME_ENDPOINT || '/api/employees/me';
-const EMPLOYEE_SEARCH_ENDPOINT = process.env.REACT_APP_EMPLOYEE_SEARCH_ENDPOINT || '/api/employees/search';
-const USE_DEMO_EMPLOYEES = process.env.REACT_APP_USE_DEMO_EMPLOYEES === 'true' || !API_BASE_URL;
-
-function getToken() {
-  return localStorage.getItem('token') || sessionStorage.getItem('token') || null;
-}
-
-function buildUrl(endpoint, params = {}) {
-  const url = new URL(`${API_BASE_URL}${endpoint}`, window.location.origin);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      url.searchParams.set(key, String(value));
-    }
-  });
-  return url.toString();
-}
-
-function buildHeaders() {
-  const headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  };
-  const token = getToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
-}
-
-async function apiGet(endpoint, params) {
-  const response = await fetch(buildUrl(endpoint, params), {
-    method: 'GET',
-    headers: buildHeaders(),
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error('Unauthorized. Please log in again.');
-    }
-    if (response.status === 404) {
-      throw new Error('Employee record not found.');
-    }
-    const errorText = await response.text().catch(() => 'An unexpected error occurred.');
-    throw new Error(errorText || `Request failed with status ${response.status}`);
-  }
-
-  return response.json();
-}
+import { getToken } from './authApi';
+import { apiClient } from './apiClient';
+import {
+  USE_DEMO,
+  EMPLOYEE_ME_ENDPOINT,
+  EMPLOYEE_SEARCH_ENDPOINT,
+} from '../config/api';
 
 /**
  * Normalize the employee API response into a canonical shape used across the Staff ID modal.
@@ -123,7 +78,7 @@ export function normalizeEmployee(data = {}) {
  * Fetch the currently logged-in employee's record.
  */
 export async function getCurrentEmployee() {
-  if (USE_DEMO_EMPLOYEES) {
+  if (USE_DEMO) {
     const token = getToken();
     const employee = token
       ? DEMO_EMPLOYEES[0]
@@ -131,7 +86,7 @@ export async function getCurrentEmployee() {
     if (!employee) throw new Error('Employee record not found.');
     return normalizeEmployee(employee);
   }
-  const data = await apiGet(EMPLOYEE_ME_ENDPOINT);
+  const data = await apiClient.get(EMPLOYEE_ME_ENDPOINT);
   return normalizeEmployee(data);
 }
 
@@ -147,14 +102,14 @@ export async function searchEmployee({ checkNumber = '', nin = '', forceNumber =
     throw new Error('Please provide a Check Number, National ID (NIN), or Force Number.');
   }
 
-  if (USE_DEMO_EMPLOYEES) {
+  if (USE_DEMO) {
     await new Promise(resolve => setTimeout(resolve, 400));
     const employee = findDemoEmployee({ checkNumber, nin, forceNumber });
     if (!employee) throw new Error('Employee record not found.');
     return normalizeEmployee(employee);
   }
 
-  const data = await apiGet(EMPLOYEE_SEARCH_ENDPOINT, { checkNumber, nin, forceNumber });
+  const data = await apiClient.get(EMPLOYEE_SEARCH_ENDPOINT, { checkNumber, nin, forceNumber });
   return normalizeEmployee(data);
 }
 

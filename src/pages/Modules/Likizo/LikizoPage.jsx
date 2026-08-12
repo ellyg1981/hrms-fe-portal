@@ -15,10 +15,16 @@ import { notificationService } from '../../../components/Notifications/notificat
 import './LikizoPage.css';
 
 const LEAVE_HISTORY = [
+  // Newest first — current year at the top
   { id: 'LV-2026-001', type: 'Annual Leave', from: '2026-07-01', to: '2026-07-14', days: 14, status: 'Approved', appliedOn: '2026-06-15', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2026-06-18', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Family vacation and annual rest period', handover: 'Tasks delegated to Assistant HR Officer James Kibonde', contactAddress: 'Plot 42, Nyerere Road, Dodoma', contactPhone: '+255 765 432 101', hasDocument: true },
   { id: 'LV-2026-002', type: 'Sick Leave', from: '2026-05-10', to: '2026-05-12', days: 3, status: 'Approved', appliedOn: '2026-05-09', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2026-05-09', region: 'Dar es Salaam', district: 'Ilala', reason: 'Medical treatment at Muhimbili Hospital', handover: 'Duties covered by Senior Officer Peter Lema', contactAddress: 'House 12, Upanga, Dar es Salaam', contactPhone: '+255 789 123 456', hasDocument: true },
-  { id: 'LV-2026-003', type: 'Annual Leave', from: '2026-12-20', to: '2026-12-31', days: 12, status: 'Pending', appliedOn: '2026-06-30', approvedBy: null, approverRole: null, decisionDate: null, region: 'Arusha', district: 'Arusha City', reason: 'End of year holiday with family', handover: 'Pending assignment to Acting Officer', contactAddress: 'P.O. Box 450, Arusha', contactPhone: '+255 754 321 987', hasDocument: false },
-  { id: 'LV-2026-004', type: 'Special Leave', from: '2026-08-05', to: '2026-08-07', days: 3, status: 'Approved', appliedOn: '2026-07-20', approvedBy: 'Mr. Joseph Mwangi', approverRole: 'Director General', decisionDate: '2026-07-25', region: 'Mbeya', district: 'Mbeya City', reason: 'Attending national cultural event as representative', handover: 'Responsibilities transferred to Deputy Director Sarah Mkonde', contactAddress: 'Plot 8, Sokoine Road, Mbeya', contactPhone: '+255 767 890 234', hasDocument: true },
+  { id: 'LV-2026-004', type: 'Special Leave', from: '2026-02-14', to: '2026-02-16', days: 3, status: 'Approved', appliedOn: '2026-02-10', approvedBy: 'Mr. Joseph Mwangi', approverRole: 'Director General', decisionDate: '2026-02-12', region: 'Mbeya', district: 'Mbeya City', reason: 'Attending national cultural event as representative', handover: 'Responsibilities transferred to Deputy Director Sarah Mkonde', contactAddress: 'Plot 8, Sokoine Road, Mbeya', contactPhone: '+255 767 890 234', hasDocument: true },
+
+  // Historical Annual Leave records — one per year, descending by year
+  { id: 'LV-2025-001', type: 'Annual Leave', from: '2025-03-12', to: '2025-03-25', days: 14, status: 'Approved', appliedOn: '2025-03-01', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2025-03-05', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Annual rest and family visit', handover: 'Duties covered by Assistant HR Officer James Kibonde', contactAddress: 'Plot 42, Nyerere Road, Dodoma', contactPhone: '+255 765 432 101', hasDocument: true },
+  { id: 'LV-2024-001', type: 'Annual Leave', from: '2024-04-08', to: '2024-04-21', days: 14, status: 'Approved', appliedOn: '2024-03-25', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2024-03-28', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Annual leave travel to visit relatives', handover: 'Responsibilities assigned to Senior Officer Peter Lema', contactAddress: 'Plot 42, Nyerere Road, Dodoma', contactPhone: '+255 765 432 101', hasDocument: true },
+  { id: 'LV-2023-001', type: 'Annual Leave', from: '2023-04-17', to: '2023-04-30', days: 14, status: 'Approved', appliedOn: '2023-04-05', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2023-04-08', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Family vacation during school break', handover: 'Work handled by Deputy Director Sarah Mkonde', contactAddress: 'Plot 42, Nyerere Road, Dodoma', contactPhone: '+255 765 432 101', hasDocument: true },
+  { id: 'LV-2022-001', type: 'Annual Leave', from: '2022-05-11', to: '2022-05-24', days: 14, status: 'Approved', appliedOn: '2022-04-28', approvedBy: 'Dr. Amina Hassan', approverRole: 'Head of Human Resources', decisionDate: '2022-05-02', region: 'Dodoma', district: 'Dodoma Municipal', reason: 'Annual rest period and family obligations', handover: 'Tasks delegated to Assistant HR Officer James Kibonde', contactAddress: 'Plot 42, Nyerere Road, Dodoma', contactPhone: '+255 765 432 101', hasDocument: true },
 ];
 
 const CONFIRMATION_LETTERS = [
@@ -44,6 +50,12 @@ const STATUS_STYLE = {
   'Returned for Correction': { background: '#FEF3C7', color: '#92400E' },
   'Issued': { background: '#ECFDF5', color: '#059669' },
   'Ready': { background: '#EFF6FF', color: '#2563EB' },
+};
+
+const PAYMENT_STATUS_STYLE = {
+  'PAID': { background: '#ECFDF5', color: '#059669' },
+  'NOT PAID': { background: '#FFFBEB', color: '#D97706' },
+  'N/A': { background: '#F3F4F6', color: '#6B7280' },
 };
 
 const TAB_ICONS = {
@@ -79,6 +91,50 @@ function LikizoPage() {
     }
     return null;
   }, [user]);
+
+  // Derive Region/Station from the employee's work location and compute Payment Status
+  // for Annual Leave only, based on the alternating annual-leave payment cycle from
+  // the employee's first applicable Annual Leave year. Other leave types are N/A.
+  // If the backend already provides a paymentStatus value, that value is displayed as-is.
+  const leaveTableData = useMemo(() => {
+    if (!LEAVE_HISTORY.length) return [];
+
+    const getYear = (dateStr) => {
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? new Date().getFullYear() : d.getFullYear();
+    };
+
+    const annualLeaves = [...LEAVE_HISTORY].filter(r => r.type === 'Annual Leave');
+    const baselineYear = annualLeaves.length
+      ? Math.min(...annualLeaves.map(r => getYear(r.from)))
+      : new Date().getFullYear();
+
+    return LEAVE_HISTORY.map(row => {
+      if (row.paymentStatus && String(row.paymentStatus).trim()) {
+        return {
+          ...row,
+          paymentStatus: String(row.paymentStatus).trim(),
+          workingRegion: applicant?.workingRegion || row.region,
+          workingStation: applicant?.workingStation || row.district,
+        };
+      }
+
+      let paymentStatus;
+      if (row.type === 'Annual Leave') {
+        const offset = getYear(row.from) - baselineYear;
+        paymentStatus = offset % 2 === 0 ? 'PAID' : 'NOT PAID';
+      } else {
+        paymentStatus = 'N/A';
+      }
+
+      return {
+        ...row,
+        paymentStatus,
+        workingRegion: applicant?.workingRegion || row.region,
+        workingStation: applicant?.workingStation || row.district,
+      };
+    });
+  }, [applicant]);
 
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedLeave, setSelectedLeave] = useState(null);
@@ -557,15 +613,15 @@ function LikizoPage() {
                 { key: 'id', header: 'Reference ID', render: row => <span className="id-badge">{row.id}</span> },
                 { key: 'type', header: 'Leave Type', render: row => <span className="leave-type">{row.type}</span> },
                 { key: 'from', header: 'From Date' },
-                { key: 'to', header: 'To Date' },
+                { key: 'paymentStatus', header: 'Payment Status', render: row => <span className="status-pill" style={{ background: PAYMENT_STATUS_STYLE[row.paymentStatus]?.background, color: PAYMENT_STATUS_STYLE[row.paymentStatus]?.color }}>{row.paymentStatus}</span> },
                 { key: 'days', header: 'Days', align: 'center', render: row => <span className="leave-days">{row.days}</span> },
-                { key: 'region', header: 'Region' },
-                { key: 'district', header: 'District' },
+                { key: 'workingRegion', header: 'Region' },
+                { key: 'workingStation', header: 'Station' },
                 { key: 'status', header: 'Status', render: row => <span className="status-pill" style={{ background: STATUS_STYLE[row.status]?.background, color: STATUS_STYLE[row.status]?.color }}>{row.status}</span> },
               ]}
-              data={LEAVE_HISTORY}
+              data={leaveTableData}
               title="Leave History"
-              searchPlaceholder="Search by ID, type, region or district..."
+              searchPlaceholder="Search leave history..."
               showFilters={showFilters}
               onToggleFilters={() => setShowFilters(v => !v)}
               filters={[
@@ -648,9 +704,6 @@ function LikizoPage() {
         {/* ── Confirmation Letter ── */}
         {activeTab === 'confirmation' && (
           <>
-            <div className="leave-section-header">
-              <div><h3 className="leave-section-title">Confirmation Letters / Movement Order</h3><p className="leave-section-desc">Official confirmation letters and/or movement orders for approved leave periods</p></div>
-            </div>
             <div className="leave-doc-grid leave-doc-grid--3">
               {CONFIRMATION_LETTERS.map(row => (
                 <div key={row.id} className="leave-doc-card">

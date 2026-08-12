@@ -99,6 +99,12 @@ export const notificationService = {
       updateToast(id, { type: 'success', message: nextMessage });
       return result;
     } catch (err) {
+      // 401/session-expiration errors are handled centrally by the AuthProvider.
+      // Dismiss the loading toast without showing a duplicate error message.
+      if (err?.silent || err?.code === 'UNAUTHORIZED') {
+        if (removeToast) removeToast(id);
+        throw err;
+      }
       const nextMessage =
         typeof errorMsg === 'function' ? errorMsg(err) :
         typeof errorMsg === 'string' ? errorMsg :

@@ -1,0 +1,28 @@
+.session-timeout-body {
+  text-align: center;
+  padding: var(--space-2) 0;
+}
+
+.session-timeout-body p {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.session-timeout-countdown {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  margin: var(--space-4) 0;
+}
+
+.session-timeout-hint {
+  font-size: var(--font-size-sm);
+}
+
+.session-timeout-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  width: 100%;
+}

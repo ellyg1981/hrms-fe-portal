@@ -537,9 +537,6 @@ function TransferPage() {
 
         {activeTab === 'confirmation' && (
           <>
-            <div className="leave-section-header">
-              <div><h3 className="leave-section-title">Confirmation Letters</h3><p className="leave-section-desc">Official confirmation letters for approved transfers</p></div>
-            </div>
             <div className="leave-doc-grid leave-doc-grid--3">
               {CONFIRMATION_LETTERS.map(row => (
                 <div key={row.id} className="leave-doc-card">

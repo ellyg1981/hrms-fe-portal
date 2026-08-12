@@ -734,12 +734,58 @@
 }
 
 /* ── Request Status Tracker ── */
-.staffid-tracker-selector {
+.staffid-tabs-row {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
-  max-width: 480px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.staffid-tabs-row .reg-tabs {
+  margin-bottom: 0;
+}
+
+.staffid-tabs-tracker.staffid-tracker-selector {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 0;
+  max-width: none;
+}
+
+.staffid-tabs-tracker .form-label {
+  margin-bottom: 0;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+}
+
+.staffid-tabs-tracker .form-select {
+  min-width: 240px;
+  max-width: 360px;
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .staffid-tabs-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .staffid-tabs-tracker.staffid-tracker-selector {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .staffid-tabs-tracker .form-select {
+    min-width: auto;
+    max-width: none;
+    width: 100%;
+  }
 }
 
 .staffid-status-card {
