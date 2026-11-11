@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import RegisterModal from './RegisterModal';
@@ -7,6 +7,7 @@ import uhamiajiLogo from '../../assets/images/uhamiaji_logo.png';
 import bgImage from '../../assets/images/hq_dodoma.jpg';
 import { notificationService } from '../../components/Notifications/notificationService';
 import Modal from '../../components/common/Modal/Modal';
+import LoadingScreen from '../../components/common/LoadingScreen/LoadingScreen';
 import { getLoginTestUsers } from '../../services/authApi';
 import './LoginPage.css';
 
@@ -24,6 +25,7 @@ function LoginPage() {
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
   const [modal, setModal] = useState(null); // 'reset' | 'register' | null
 
   useEffect(() => { document.title = 'Login | HRMS Portal'; }, []);
@@ -52,10 +54,12 @@ function LoginPage() {
 
   const handleSubmit = async (evt) => {
     evt.preventDefault();
+    if (submittingRef.current) return;
     if (!validate()) {
       notificationService.warning('Please correct the highlighted fields before submitting.');
       return;
     }
+    submittingRef.current = true;
     setLoading(true);
     setLoginError('');
     try {
@@ -70,6 +74,7 @@ function LoginPage() {
     } catch (err) {
       setLoginError(err.message || 'Invalid username or password');
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };
@@ -158,8 +163,8 @@ function LoginPage() {
               <button type="button" className="link-btn" onClick={() => openModal('reset')}>Reset Password?</button>
             </div>
 
-            <button type="submit" className="btn btn-primary login-submit" disabled={loading}>
-              {loading ? 'LOGGING IN...' : 'LOGIN'}
+            <button type="submit" className="btn btn-primary login-submit" disabled={loading} aria-busy={loading}>
+              {loading ? <span className="login-submit-spinner" aria-label="Signing in" /> : 'LOGIN'}
             </button>
           </form>
 
@@ -169,6 +174,8 @@ function LoginPage() {
         </div>
       </div>
 
+      {/* Signing-in loading overlay */}
+      {loading && <LoadingScreen message="Signing in..." />}
       {/* Reset Password Modal */}
       {modal === 'reset' && <ResetPasswordModal onClose={closeModal} />}
       {/* Register Modal */}

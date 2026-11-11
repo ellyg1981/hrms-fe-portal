@@ -2,7 +2,15 @@
   position: fixed;
   top: var(--header-height); left: 0; bottom: 0;
   width: var(--sidebar-width);
-  background: #0B1D3A;
+  /* Same treatment as the HRMS Management sidebar / Login left panel:
+     hq_dodoma image under a semi-transparent dark-blue overlay. */
+  background-color: #0B1F3B;
+  background-image:
+    linear-gradient(rgba(15, 46, 94, 0.9), rgba(15, 46, 94, 0.9)),
+    url('../../../assets/images/hq_dodoma.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: rgba(255,255,255,0.65);
   display: flex;
   flex-direction: column;
@@ -36,7 +44,7 @@
   width: 36px; height: 36px;
   border-radius: var(--radius-md);
   background: var(--color-gold);
-  color: #0B1D3A;
+  color: #0F2E5E;
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 13px;
   flex-shrink: 0;

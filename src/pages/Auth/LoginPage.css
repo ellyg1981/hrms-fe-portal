@@ -276,6 +276,20 @@
   margin-top: var(--space-2);
 }
 
+.login-submit-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 9999px;
+  animation: login-submit-spin 1s linear infinite;
+}
+
+@keyframes login-submit-spin {
+  to { transform: rotate(360deg); }
+}
+
 .login-users-trigger {
   position: absolute;
   bottom: var(--space-8);
