@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import './ServiceCard.css';
 
 function ServiceCard({
@@ -11,13 +13,16 @@ function ServiceCard({
   iconBg = 'var(--color-sky-blue)',
   iconColor = 'var(--color-primary)',
   ariaLabel,
+  index = 0,
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       className="service-card"
       onClick={onClick}
       aria-label={ariaLabel || title}
+      {...cardMotion(index, { tap: true })}
+      whileHover={{ scale: 1.03 }}
     >
       <div className="service-card__top">
         <div
@@ -52,7 +57,7 @@ function ServiceCard({
           <path d="M12 5l7 7-7 7" />
         </svg>
       </div>
-    </button>
+    </motion.button>
   );
 }
 

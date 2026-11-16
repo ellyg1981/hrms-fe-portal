@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
@@ -205,7 +207,7 @@ function StaffIdPage() {
       <html>
         <head><title>${att.name}</title>
           <style>
-            body { font-family: system-ui, -apple-system, sans-serif; background: #f5f7fa; padding: 40px; display: flex; justify-content: center; }
+            body { font-family: 'Montserrat Variable', 'Montserrat', system-ui, -apple-system, sans-serif; background: #f5f7fa; padding: 40px; display: flex; justify-content: center; }
             .preview { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 32px; max-width: 720px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
             h2 { margin: 0 0 8px; color: #0B2E59; font-size: 20px; }
             p { color: #64748b; margin: 0 0 24px; }
@@ -987,7 +989,7 @@ function StaffIdPage() {
           <>
             {trackingApp && (
               <>
-                <div className="staffid-status-card">
+                <motion.div className="staffid-status-card" {...cardMotion(0, { hover: false })}>
                   <div className="staffid-status-card-main">
                     <div>
                       <span className="staffid-status-card-label">Current Status</span>
@@ -1012,7 +1014,7 @@ function StaffIdPage() {
                       <span>Action Required: This application has been returned for correction.</span>
                     </div>
                   )}
-                </div>
+                </motion.div>
 
                 <div className="staffid-tracker-grid">
                   <div className="staffid-tracker-panel">

@@ -1,4 +1,6 @@
 import React, { useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import DataTable from '../../../components/common/DataTable/DataTable';
 import Modal from '../../../components/common/Modal/Modal';
 import { notificationService } from '../../../components/Notifications/notificationService';
@@ -552,7 +554,7 @@ function TrainingProgressTab() {
                 <h5 className="training-detail-section-title">Progress History</h5>
                 <div className="training-progress-list">
                   {selectedRequest.progressUpdates.map((update, i) => (
-                    <div key={i} className="training-progress-card">
+                    <motion.div key={i} className="training-progress-card" {...cardMotion(i, { hover: false })}>
                       <div className="training-progress-card-header">
                         <div className="training-progress-card-meta">
                           <span className="training-progress-date">{update.submissionDate}</span>
@@ -608,7 +610,7 @@ function TrainingProgressTab() {
                         <span className="training-detail-label">Submitted By</span>
                         <span className="training-detail-value">{update.submittedBy}</span>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>

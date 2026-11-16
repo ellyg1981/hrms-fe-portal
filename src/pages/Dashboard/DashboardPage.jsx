@@ -88,9 +88,10 @@ function DashboardPage() {
 
       {/* Service Cards */}
       <div className="service-cards-grid">
-        {SERVICE_CARDS.map((svc) => (
+        {SERVICE_CARDS.map((svc, i) => (
           <ServiceCard
             key={svc.path}
+            index={i}
             title={svc.title}
             description={svc.description}
             icon={svc.icon}

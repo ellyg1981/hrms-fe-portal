@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import BlurFadeText from '../../components/common/BlurFadeText/BlurFadeText';
 import RegisterModal from './RegisterModal';
 import coatOfArms from '../../assets/images/coat_of_arms.png';
 import uhamiajiLogo from '../../assets/images/uhamiaji_logo.png';
@@ -15,6 +17,16 @@ const SLIDES = [
   { id: 'coat', src: coatOfArms, alt: 'Coat of Arms' },
   { id: 'logo', src: uhamiajiLogo, alt: 'Uhamiaji Logo' },
 ];
+
+const formVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.5 } },
+};
+
+const fieldVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+};
 
 function LoginPage() {
   const { user, login } = useAuth();
@@ -95,94 +107,145 @@ function LoginPage() {
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="login-page">
       <div className="login-bg">
-        <img src={bgImage} alt="" className="login-bg-img" />
+        <motion.img
+          src={bgImage}
+          alt=""
+          className="login-bg-img"
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.4, ease: 'easeOut' }}
+        />
         <div className="login-bg-overlay" />
       </div>
-      <div className="login-card">
+      <motion.div
+        className="login-card"
+        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="login-left">
           <div className="login-slider">
-            {SLIDES.map((slide, idx) => (
-              <div key={slide.id} className={`login-slide ${idx === currentSlide ? 'active' : ''}`}>
-                {slide.render ? slide.render() : <img src={slide.src} alt={slide.alt} className="login-slide-img" />}
-              </div>
-            ))}
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={SLIDES[currentSlide].id}
+                className="login-slide"
+                initial={{ opacity: 0, scale: 0.9, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 1.05, filter: 'blur(8px)' }}
+                transition={{ duration: 0.6, ease: 'easeInOut' }}
+              >
+                {SLIDES[currentSlide].render ? SLIDES[currentSlide].render() : <img src={SLIDES[currentSlide].src} alt={SLIDES[currentSlide].alt} className="login-slide-img" />}
+              </motion.div>
+            </AnimatePresence>
           </div>
           <div className="login-dots">
             {SLIDES.map((_, idx) => (
-              <button key={idx} className={`login-dot ${idx === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(idx)} aria-label={`Go to slide ${idx + 1}`} />
+              <motion.button key={idx} className={`login-dot ${idx === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(idx)} aria-label={`Go to slide ${idx + 1}`} whileHover={{ scale: 1.3 }} whileTap={{ scale: 0.9 }} />
             ))}
           </div>
           {testUsers.length > 0 && (
-            <button type="button" className="login-users-trigger" onClick={() => openModal('users')}>
+            <motion.button type="button" className="login-users-trigger" onClick={() => openModal('users')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               Users
-            </button>
+            </motion.button>
           )}
         </div>
 
         <div className="login-right">
-          <h1 className="login-title">Welcome</h1>
+          <BlurFadeText as="h1" className="login-title" text="Welcome" delay={0.2} />
           {/* <p className="login-subtitle">Login into the Employee Self Service</p> */}
-          <p className="login-subtitle">Login to: TISD Employee Self Service</p>
+          <BlurFadeText as="p" className="login-subtitle" text="Login to: TISD Employee Self Service" delay={0.35} />
 
-          {loginError && <div className="login-error-banner">{loginError}</div>}
+          <AnimatePresence>
+            {loginError && (
+              <motion.div
+                className="login-error-banner"
+                initial={{ opacity: 0, height: 0, x: 0 }}
+                animate={{ opacity: 1, height: 'auto', x: [0, -8, 8, -5, 5, 0] }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                {loginError}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className={`form-group ${errors.username ? 'form-group--error' : ''}`}>
+          <motion.form onSubmit={handleSubmit} className="login-form" variants={formVariants} initial="hidden" animate="visible">
+            <motion.div variants={fieldVariants} className={`form-group ${errors.username ? 'form-group--error' : ''}`}>
               <label className="form-label">Username *</label>
               <div className="input-wrapper">
                 <input className="form-input" type="text" name="username" value={form.username} onChange={handleChange} placeholder="e.g. steven.mzena" autoFocus />
                 <span className="input-suffix"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
               </div>
               <span className="form-hint">Enter firstname.lastname (domain @immigration.go.tz is added automatically)</span>
-              {errors.username && <span className="form-error">{errors.username}</span>}
-            </div>
+              <AnimatePresence>
+                {errors.username && <motion.span className="form-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>{errors.username}</motion.span>}
+              </AnimatePresence>
+            </motion.div>
 
-            <div className={`form-group ${errors.password ? 'form-group--error' : ''}`}>
+            <motion.div variants={fieldVariants} className={`form-group ${errors.password ? 'form-group--error' : ''}`}>
               <label className="form-label">Password *</label>
               <div className="input-wrapper">
                 <input className="form-input" type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange} placeholder="Enter password" />
                 <button type="button" className="input-suffix input-suffix--btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
-                  {showPassword ? (
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-3.72 1.08L3 3"/><circle cx="12" cy="12" r="3"/></svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span key={showPassword ? 'hide' : 'show'} style={{ display: 'flex' }} initial={{ opacity: 0, rotate: -90, scale: 0.6 }} animate={{ opacity: 1, rotate: 0, scale: 1 }} exit={{ opacity: 0, rotate: 90, scale: 0.6 }} transition={{ duration: 0.18 }}>
+                      {showPassword ? (
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-3.72 1.08L3 3"/><circle cx="12" cy="12" r="3"/></svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      )}
+                    </motion.span>
+                  </AnimatePresence>
                 </button>
               </div>
-              {errors.password && <span className="form-error">{errors.password}</span>}
-            </div>
+              <AnimatePresence>
+                {errors.password && <motion.span className="form-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>{errors.password}</motion.span>}
+              </AnimatePresence>
+            </motion.div>
 
-            <div className="login-options">
+            <motion.div variants={fieldVariants} className="login-options">
               <label className="checkbox-label">
                 <input type="checkbox" name="rememberMe" checked={form.rememberMe} onChange={handleChange} />
                 <span>Remember me</span>
               </label>
-              <button type="button" className="link-btn" onClick={() => openModal('reset')}>Reset Password?</button>
-            </div>
+              <motion.button type="button" className="link-btn" onClick={() => openModal('reset')} whileHover={{ x: 2 }}>Reset Password?</motion.button>
+            </motion.div>
 
-            <button type="submit" className="btn btn-primary login-submit" disabled={loading} aria-busy={loading}>
+            <motion.button
+              variants={fieldVariants}
+              type="submit"
+              className="btn btn-primary login-submit"
+              disabled={loading}
+              aria-busy={loading}
+              whileHover={loading ? undefined : { scale: 1.02, boxShadow: '0 8px 24px rgba(11, 30, 58, 0.25)' }}
+              whileTap={loading ? undefined : { scale: 0.98 }}
+            >
               {loading ? <span className="login-submit-spinner" aria-label="Signing in" /> : 'LOGIN'}
-            </button>
-          </form>
+            </motion.button>
+          </motion.form>
 
-          <p className="login-register">
+          <motion.p className="login-register" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 0.4 }}>
             Not Registered? <button type="button" className="link-btn link-btn--bold" onClick={() => openModal('register')}>Click here to register</button>
-          </p>
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Signing-in loading overlay */}
       {loading && <LoadingScreen message="Signing in..." />}
       {/* Reset Password Modal */}
-      {modal === 'reset' && <ResetPasswordModal onClose={closeModal} />}
+      <AnimatePresence>
+        {modal === 'reset' && <ResetPasswordModal key="reset" onClose={closeModal} />}
+      </AnimatePresence>
       {/* Register Modal */}
       {modal === 'register' && <RegisterModal onClose={closeModal} />}
       {/* Users Modal */}
       {modal === 'users' && <UsersModal users={testUsers} onClose={closeModal} onSelect={handleSelectUser} />}
     </div>
+    </MotionConfig>
   );
 }
 
@@ -216,8 +279,16 @@ function ResetPasswordModal({ onClose }) {
   };
 
   return (
-    <div className="login-modal-overlay" onClick={onClose}>
-      <div className="login-modal" onClick={e => e.stopPropagation()}>
+    <motion.div className="login-modal-overlay" style={{ animation: 'none' }} onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+      <motion.div
+        className="login-modal"
+        style={{ animation: 'none' }}
+        onClick={e => e.stopPropagation()}
+        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 24, scale: 0.96 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+      >
         <button className="login-modal-close" onClick={onClose}>&times;</button>
         {!success ? (
           <>
@@ -259,8 +330,8 @@ function ResetPasswordModal({ onClose }) {
             <button className="btn btn-primary login-submit" onClick={onClose}>Back to Login</button>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Modal from '../../../components/common/Modal/Modal';
 import DataTable from '../../../components/common/DataTable/DataTable';
@@ -315,7 +317,7 @@ function TrainingPage() {
 <head>
 <meta charset="utf-8">
 <style>
-  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1f2937; line-height: 1.5; }
+  body { font-family: 'Montserrat Variable', 'Montserrat', 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1f2937; line-height: 1.5; }
   .program-pdf-page { padding: 24px; }
   .pdf-header { text-align: center; border-bottom: 2px solid #d4a017; padding-bottom: 16px; margin-bottom: 20px; }
   .pdf-title { font-size: 20px; font-weight: 800; color: #0B2E59; margin: 0 0 4px 0; }
@@ -412,7 +414,7 @@ function TrainingPage() {
 <title>${att.name} — Preview</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #e5e7eb; font-family: 'Segoe UI', Arial, sans-serif; padding: 24px; min-height: 100vh; }
+  body { background: #e5e7eb; font-family: 'Montserrat Variable', 'Montserrat', 'Segoe UI', Arial, sans-serif; padding: 24px; min-height: 100vh; }
   .a4-page {
     width: 210mm;
     min-height: 297mm;
@@ -636,8 +638,8 @@ function TrainingPage() {
         {activeTab === 'available' && (
           <>
             <div className="leave-doc-grid leave-doc-grid--3">
-              {PROGRAMS.map(p => (
-                <div key={p.id} className="leave-doc-card training-program-card">
+              {PROGRAMS.map((p, i) => (
+                <motion.div key={p.id} className="leave-doc-card training-program-card" {...cardMotion(i)}>
                   <div className="leave-doc-header">
                     <div className="leave-doc-icon" style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', color: '#2563eb' }}>
                       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -661,7 +663,7 @@ function TrainingPage() {
                     <button className="btn btn-sm btn-primary" onClick={() => handleApplyNow(p)}>Apply Now</button>
                     <button className="btn btn-sm btn-secondary" onClick={() => handleViewDetails(p)}>View Details</button>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </>

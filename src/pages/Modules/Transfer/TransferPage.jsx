@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
@@ -66,7 +68,7 @@ function TransferPage() {
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
   html { background: #fff; overflow: hidden; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; overflow: hidden; }
+  body { font-family: 'Montserrat Variable', 'Montserrat', 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; overflow: hidden; }
   .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 15mm 18mm; background: #fff; overflow: hidden; }
   .hdr-center { text-align: center; }
   .hdr-center h1 { font-size: 12pt; font-weight: 700; margin: 0 0 2px; text-transform: uppercase; }
@@ -184,7 +186,7 @@ function TransferPage() {
 <style>
   @page { size: A4; margin: 15mm; }
   * { box-sizing: border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; }
+  body { font-family: 'Montserrat Variable', 'Montserrat', 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; }
   .page { max-width: 210mm; margin: 0 auto; padding: 10mm; }
   .hdr-center { text-align: center; margin-bottom: 16px; }
   .hdr-center h1 { font-size: 12pt; font-weight: 700; margin: 0 0 2px; text-transform: uppercase; }
@@ -311,15 +313,15 @@ function TransferPage() {
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value">2</span><span className="overview-stat-label">Active Requests</span></div>
               </Card>
-              <Card className="overview-stat-card" hover>
+              <Card className="overview-stat-card" hover index={1}>
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value">3</span><span className="overview-stat-label">Active Applications</span></div>
               </Card>
-              <Card className="overview-stat-card" hover>
+              <Card className="overview-stat-card" hover index={2}>
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value">3</span><span className="overview-stat-label">Available Documents</span></div>
               </Card>
-              <Card className="overview-stat-card" hover>
+              <Card className="overview-stat-card" hover index={3}>
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value">1</span><span className="overview-stat-label">Pending Approval</span></div>
               </Card>
@@ -538,8 +540,8 @@ function TransferPage() {
         {activeTab === 'confirmation' && (
           <>
             <div className="leave-doc-grid leave-doc-grid--3">
-              {CONFIRMATION_LETTERS.map(row => (
-                <div key={row.id} className="leave-doc-card">
+              {CONFIRMATION_LETTERS.map((row, i) => (
+                <motion.div key={row.id} className="leave-doc-card" {...cardMotion(i)}>
                   <div className="leave-doc-header">
                     <div className="leave-doc-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
                     <div className="leave-doc-info">
@@ -556,7 +558,7 @@ function TransferPage() {
                     <button className="btn btn-sm btn-secondary" onClick={() => handlePreviewConfirmation(row)}>Preview</button>
                     <button className="btn btn-sm btn-primary" onClick={() => handleDownloadConfirmation(row)}>Download PDF</button>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 

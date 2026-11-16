@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import Modal from '../../../components/common/Modal/Modal';
 import html2pdf from 'html2pdf.js';
 import { openDocument } from '../../../utils/preview';
@@ -199,7 +201,7 @@ function AnnouncementsPage() {
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
   html { background: #fff; overflow: hidden; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; overflow: hidden; }
+  body { font-family: 'Montserrat Variable', 'Montserrat', 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.4; overflow: hidden; }
   .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 15mm 18mm; background: #fff; overflow: hidden; }
   .hdr-center { text-align: center; }
   .hdr-center h1 { font-size: 12pt; font-weight: 700; margin: 0 0 2px; text-transform: uppercase; }
@@ -280,9 +282,10 @@ function AnnouncementsPage() {
     <div className="notifications-page">
       {/* Category Filter Cards */}
       <div className="notifications-page-stats">
-        <button
+        <motion.button
           className={`notif-stat-card ${activeCategory === 'all' ? 'active' : ''}`}
           onClick={() => handleCategoryChange('all')}
+          {...cardMotion(0, { tap: true })}
         >
           <div className="notif-stat-icon" style={{ background: '#F3F4F6', color: '#0B2E59' }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -291,14 +294,15 @@ function AnnouncementsPage() {
             <span className="notif-stat-count">{NOTIFICATIONS.length}</span>
             <span className="notif-stat-label">All Announcements</span>
           </div>
-        </button>
-        {CATEGORIES.map(cat => {
+        </motion.button>
+        {CATEGORIES.map((cat, i) => {
           const cs = catStyle(cat);
           return (
-            <button
+            <motion.button
               key={cat}
               className={`notif-stat-card ${activeCategory === cat ? 'active' : ''}`}
               onClick={() => handleCategoryChange(cat)}
+              {...cardMotion(i + 1, { tap: true })}
             >
               <div className="notif-stat-icon" style={{ background: cs.bg, color: cs.color }}>
                 {cs.icon}
@@ -307,19 +311,19 @@ function AnnouncementsPage() {
                 <span className="notif-stat-count">{categoryCounts[cat]}</span>
                 <span className="notif-stat-label">{cat}</span>
               </div>
-            </button>
+            </motion.button>
           );
         })}
       </div>
 
       {/* Notification Cards List */}
       <div className="notif-card-list">
-        {paginatedNotifs.map(notif => {
+        {paginatedNotifs.map((notif, i) => {
           const cs = catStyle(notif.category);
           const ps = prioStyle(notif.priority);
           const hasAttachments = notif.attachments && notif.attachments.length > 0;
           return (
-            <div key={notif.id} className="notif-card" onClick={() => openNotifModal(notif)}>
+            <motion.div key={notif.id} className="notif-card" onClick={() => openNotifModal(notif)} {...cardMotion(i, { tap: true })} whileHover={{ scale: 1.01 }}>
               <div className="notif-card-header">
                 <div className="notif-card-title-row">
                   <div className="notif-card-icon" style={{ background: cs.bg, color: cs.color }}>
@@ -370,7 +374,7 @@ function AnnouncementsPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

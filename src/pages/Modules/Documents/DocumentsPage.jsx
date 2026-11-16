@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import DataTable from '../../../components/common/DataTable/DataTable';
 import './DocumentsPage.css';
@@ -42,17 +44,18 @@ function DocumentsPage() {
         <ModuleTitleBar title="Documents Center" subtitle="Access and download your official documents" color="#0B2E59" />
 
         <div className="doc-categories">
-          {CATEGORIES.map(cat => (
-            <button
+          {CATEGORIES.map((cat, i) => (
+            <motion.button
               key={cat.key}
               className={`doc-category-card ${activeCategory === cat.key ? 'active' : ''}`}
               onClick={() => setActiveCategory(cat.key)}
+              {...cardMotion(i, { tap: true })}
             >
               <span className="doc-category-label">{cat.label}</span>
               <span className="doc-category-count">
                 {cat.key === 'all' ? DOCUMENTS.length : DOCUMENTS.filter(d => d.category === cat.key).length}
               </span>
-            </button>
+            </motion.button>
           ))}
         </div>
 

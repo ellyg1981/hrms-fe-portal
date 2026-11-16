@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import DataTable from '../../../components/common/DataTable/DataTable';
 import Modal from '../../../components/common/Modal/Modal';
@@ -141,15 +143,15 @@ function StatusPill({ status }) {
   );
 }
 
-function SummaryCard({ label, value, color, icon }) {
+function SummaryCard({ label, value, color, icon, index = 0 }) {
   return (
-    <div className="anuai-summary-card" style={{ borderLeftColor: color }}>
+    <motion.div className="anuai-summary-card" style={{ borderLeftColor: color }} {...cardMotion(index)}>
       <div className="anuai-summary-icon" style={{ background: `${color}15`, color }}>{icon}</div>
       <div className="anuai-summary-info">
         <span className="anuai-summary-value">{value}</span>
         <span className="anuai-summary-label">{label}</span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -590,13 +592,13 @@ function AnuaiPage() {
 
         <div className="anuai-summary-grid">
           <SummaryCard label="My Requests" value={summary.total} color="#0B2E59" icon={<IconListCheck />} />
-          <SummaryCard label="Under Review" value={summary.underReview} color="#D97706" icon={<IconEye />} />
-          <SummaryCard label="In Progress" value={summary.inProgress} color="#0284C7" icon={<IconBriefcase />} />
-          <SummaryCard label="Resolved" value={summary.resolved} color="#059669" icon={<IconHeart />} />
+          <SummaryCard label="Under Review" value={summary.underReview} color="#D97706" icon={<IconEye />} index={1} />
+          <SummaryCard label="In Progress" value={summary.inProgress} color="#0284C7" icon={<IconBriefcase />} index={2} />
+          <SummaryCard label="Resolved" value={summary.resolved} color="#059669" icon={<IconHeart />} index={3} />
         </div>
 
         <section className="anuai-section">
-          <div className="anuai-overview-card">
+          <motion.div className="anuai-overview-card" {...cardMotion(0, { hover: false })}>
             <div className="anuai-overview-icon"><IconUsers /></div>
             <div className="anuai-overview-body">
               <h3 className="anuai-overview-title">Social Diversity in Public Service and Institutions in Tanzania</h3>
@@ -605,11 +607,11 @@ function AnuaiPage() {
                 <button className="anuai-read-more-link" onClick={() => setShowReadMore(true)}>Read more</button>
               </p>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         <section className="anuai-section anuai-support-section">
-          <div className="anuai-support-box">
+          <motion.div className="anuai-support-box" {...cardMotion(0, { hover: false })}>
             <h3 className="anuai-support-title">Need Support?</h3>
             <p className="anuai-support-text">
               If you have a concern related to Anuai za Jamii, you can communicate with management and request assistance or guidance.
@@ -618,7 +620,7 @@ function AnuaiPage() {
               <button className="btn btn-primary" onClick={() => setShowRequest(true)}><IconHeart /> Request Support</button>
               <button className="btn btn-secondary" onClick={() => setShowReport(true)}><IconAlert /> Report a Concern</button>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         <section className="anuai-section">

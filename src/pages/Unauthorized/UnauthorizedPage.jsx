@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../utils/motion';
 import './UnauthorizedPage.css';
 
 function UnauthorizedPage() {
@@ -7,7 +9,7 @@ function UnauthorizedPage() {
 
   return (
     <div className="unauthorized-page">
-      <div className="unauthorized-card">
+      <motion.div className="unauthorized-card" {...cardMotion(0, { hover: false })}>
         <div className="unauthorized-icon">
           <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="12" cy="12" r="10" />
@@ -27,7 +29,7 @@ function UnauthorizedPage() {
             Go Back
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

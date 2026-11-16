@@ -1,4 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import ModuleTitleBar from '../../../components/common/ModuleTitleBar/ModuleTitleBar';
 import { openDocument } from '../../../utils/preview';
 import Card from '../../../components/common/Card/Card';
@@ -229,7 +231,7 @@ function LikizoPage() {
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
   html { background: #fff; overflow: hidden; }
-  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.3; overflow: hidden; }
+  body { font-family: 'Montserrat Variable', 'Montserrat', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; font-size: 10pt; line-height: 1.3; overflow: hidden; }
   .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 12mm 14mm; background: #fff; overflow: hidden; }
   .hdr-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 9pt; }
   .hdr-table td { vertical-align: top; padding: 0; line-height: 1.2; }
@@ -426,15 +428,15 @@ function LikizoPage() {
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value">22</span><span className="overview-stat-label">Annual Leave Days Left</span></div>
               </Card>
-              <Card className="overview-stat-card" hover>
+              <Card className="overview-stat-card" hover index={1}>
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value" style={{ fontSize: '17px' }}>10th Sept. 2026</span><span className="overview-stat-label">Date of Leave per Cycle</span></div>
               </Card>
-              <Card className="overview-stat-card" hover>
+              <Card className="overview-stat-card" hover index={2}>
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value">4</span><span className="overview-stat-label">Total Leave Records</span></div>
               </Card>
-              <Card className="overview-stat-card" hover>
+              <Card className="overview-stat-card" hover index={3}>
                 <div className="overview-stat-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg></div>
                 <div className="overview-stat-body"><span className="overview-stat-value">2</span><span className="overview-stat-label">Available Documents</span></div>
               </Card>
@@ -705,8 +707,8 @@ function LikizoPage() {
         {activeTab === 'confirmation' && (
           <>
             <div className="leave-doc-grid leave-doc-grid--3">
-              {CONFIRMATION_LETTERS.map(row => (
-                <div key={row.id} className="leave-doc-card">
+              {CONFIRMATION_LETTERS.map((row, i) => (
+                <motion.div key={row.id} className="leave-doc-card" {...cardMotion(i)}>
                   <div className="leave-doc-header">
                     <div className="leave-doc-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg></div>
                     <div className="leave-doc-info">
@@ -723,7 +725,7 @@ function LikizoPage() {
                     <button className="btn btn-sm btn-secondary" onClick={() => viewDocument(row, 'confirmation')} disabled={!row.hasDocument} title={row.hasDocument ? 'View Document' : 'Document not available'}>View Document</button>
                     <button className="btn btn-sm btn-primary" onClick={() => downloadConfirmationDocument(row)} disabled={!row.hasDocument} title={row.hasDocument ? 'Download Document' : 'Document not available'}>Download</button>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </>

@@ -1,12 +1,14 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { cardMotion } from '../../../utils/motion';
 import './Card.css';
 
-function Card({ children, className = '', padding = 'normal', hover = true }) {
+function Card({ children, className = '', padding = 'normal', hover = true, index = 0 }) {
   const padClass = padding === 'none' ? 'card--no-padding' : padding === 'large' ? 'card--large-padding' : '';
   return (
-    <div className={`card ${hover ? 'card--hover' : ''} ${padClass} ${className}`}>
+    <motion.div className={`card ${hover ? 'card--hover' : ''} ${padClass} ${className}`} {...cardMotion(index, { hover })}>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
