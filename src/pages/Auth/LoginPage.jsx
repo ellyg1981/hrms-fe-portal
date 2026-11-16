@@ -249,10 +249,74 @@ function LoginPage() {
   );
 }
 
+const OTP_LENGTH = 6;
+
+function OtpInput({ value, onChange, autoFocus }) {
+  const inputsRef = useRef([]);
+  const focusAt = (i) => inputsRef.current[Math.max(0, Math.min(i, OTP_LENGTH - 1))]?.focus();
+
+  const setDigits = (start, digits) => {
+    const next = [...value];
+    digits.split('').slice(0, OTP_LENGTH - start).forEach((d, k) => { next[start + k] = d; });
+    onChange(next);
+    focusAt(start + digits.length);
+  };
+
+  const handleChange = (i, e) => {
+    const digits = e.target.value.replace(/\D/g, '');
+    if (!digits) return;
+    setDigits(i, digits.length > 1 && !value[i] ? digits : digits.slice(-1));
+  };
+
+  const handleKeyDown = (i, e) => {
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      const next = [...value];
+      if (next[i]) { next[i] = ''; onChange(next); } else if (i > 0) { next[i - 1] = ''; onChange(next); focusAt(i - 1); }
+    } else if (e.key === 'ArrowLeft') { e.preventDefault(); focusAt(i - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); focusAt(i + 1); }
+  };
+
+  const handlePaste = (i, e) => {
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '');
+    if (!digits) return;
+    e.preventDefault();
+    setDigits(i, digits);
+  };
+
+  return (
+    <div className="otp-group" role="group" aria-label="Verification code">
+      {value.map((digit, i) => (
+        <motion.input
+          key={i}
+          ref={el => { inputsRef.current[i] = el; }}
+          className={`otp-input ${digit ? 'otp-input--filled' : ''}`}
+          type="text"
+          inputMode="numeric"
+          autoComplete={i === 0 ? 'one-time-code' : 'off'}
+          maxLength={OTP_LENGTH}
+          value={digit}
+          aria-label={`Digit ${i + 1}`}
+          autoFocus={autoFocus && i === 0}
+          onChange={e => handleChange(i, e)}
+          onKeyDown={e => handleKeyDown(i, e)}
+          onPaste={e => handlePaste(i, e)}
+          onFocus={e => e.target.select()}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0, scale: digit ? [1, 1.08, 1] : 1 }}
+          transition={{ delay: i * 0.04, duration: 0.25 }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function ResetPasswordModal({ onClose }) {
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState('');
-  const [code, setCode] = useState('');
+  const [otp, setOtp] = useState(() => Array(OTP_LENGTH).fill(''));
+  const code = otp.join('');
+  const codeComplete = code.length === OTP_LENGTH;
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -270,7 +334,7 @@ function ResetPasswordModal({ onClose }) {
   const handleReset = (e) => {
     e.preventDefault();
     setError('');
-    if (code.length < 4) { setError('Please enter a valid verification code'); return; }
+    if (!codeComplete) { setError('Please enter the 6-digit verification code'); return; }
     if (!newPassword) { setError('New password is required'); return; }
     if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { setError('Passwords do not match'); return; }
@@ -293,7 +357,9 @@ function ResetPasswordModal({ onClose }) {
         {!success ? (
           <>
             <h3 className="login-modal-title">Reset Password</h3>
-            <p className="login-modal-subtitle">{step === 1 ? 'Enter your username to receive a reset code' : 'Enter the code and set a new password'}</p>
+            <p className="login-modal-subtitle">
+              {step === 1 ? 'Enter your username to receive a reset code' : codeComplete ? 'Code entered. Now set your new password' : 'Enter the 6-digit code sent to you'}
+            </p>
             {error && <div className="login-modal-error">{error}</div>}
             {step === 1 ? (
               <form onSubmit={handleSendCode} className="login-modal-form">
@@ -307,18 +373,31 @@ function ResetPasswordModal({ onClose }) {
               <form onSubmit={handleReset} className="login-modal-form">
                 <div className="form-group">
                   <label className="form-label">Verification Code *</label>
-                  <input className="form-input" type="text" value={code} onChange={e => setCode(e.target.value)} placeholder="Enter 6-digit code" maxLength={6} />
+                  <OtpInput value={otp} onChange={next => { setOtp(next); setError(''); }} autoFocus />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">New Password *</label>
-                  <input className="form-input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Enter new password" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Confirm Password *</label>
-                  <input className="form-input" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm new password" />
-                </div>
-                <button type="submit" className="btn btn-primary login-submit" disabled={loading}>{loading ? 'Resetting...' : 'Reset Password'}</button>
-                <button type="button" className="btn btn-secondary login-submit" style={{ marginTop: 10 }} onClick={() => setStep(1)}>Back</button>
+                <AnimatePresence initial={false}>
+                  {codeComplete && (
+                    <motion.div
+                      key="password-fields"
+                      className="login-modal-form"
+                      initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                      animate={{ opacity: 1, height: 'auto', transitionEnd: { overflow: 'visible' } }}
+                      exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                    >
+                      <div className="form-group">
+                        <label className="form-label">New Password *</label>
+                        <input className="form-input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Enter new password" autoFocus />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Confirm Password *</label>
+                        <input className="form-input" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm new password" />
+                      </div>
+                      <button type="submit" className="btn btn-primary login-submit" disabled={loading}>{loading ? 'Resetting...' : 'Reset Password'}</button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <button type="button" className="btn btn-secondary login-submit" onClick={() => { setStep(1); setOtp(Array(OTP_LENGTH).fill('')); setError(''); }}>Back</button>
               </form>
             )}
           </>
